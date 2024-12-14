@@ -20,15 +20,12 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 ## Getting Started:
 Check the [main.tex](main.tex) template provided with this package.
 
-![Hellow World Example](hello-world.png)
+![Quick Example](example-1.gif)
 
 ```
 \documentclass[aspectratio=169]{beamer}
 \usepackage{edu-slides}
 
-%%
-%% Configure your parameters
-%%
 \pgfkeys{
     /params/.is family,
     /params/.cd,
@@ -43,20 +40,22 @@ Check the [main.tex](main.tex) template provided with this package.
         course/logo/.initial    = images/cen4010-logo.png,
 }
 
-%%
-%% Configure your slides
-%%
+
 \begin{document}
-   \slideCover{Lesson 1 \\ Introduction}
-   \slideAgenda{
+    \slideCover{Lesson 1 \\ Introduction}
+    \slideAgenda{
         \begin{itemize}
         \item Topic 1
         \item Topic 2
         \item Topic 3
         \end{itemize}
    }
-   \slideBackCover{}
+    \slideTeleprompt{Topic 1}{\input{tests/text-1.txt}}
+    \slideDouble{Topic 2}{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
+    \slideTextImage{Topic 3}{tests/img-1.png}{\input{tests/text-1.txt}}
+    \slideBackCover{}
 \end{document}
+
 ```
 
 ## Disclaimer: 
