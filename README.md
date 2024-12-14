@@ -18,8 +18,9 @@ The focus is on simplicity and obviousness ensuring that users—whether manuall
 or leveraging AI outputs—can maintain a polished, professional appearance with minimal effort. 
 
 ## Getting Started:
-Check the main.tex template provided with this package.
+Check the [a relative link](main.tex) template provided with this package.
 
+![Hellow World Example](hello-world.png)
 
 ```
 \documentclass[aspectratio=169]{beamer}
