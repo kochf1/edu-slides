@@ -29,6 +29,12 @@ Check the [main.tex](main.tex) template provided with this package.
 \pgfkeys{
     /params/.is family,
     /params/.cd,
+        % Logo
+        logo/.initial           = images/fau-logo.png,
+    %
+        % Banner
+        banner/.initial         = images/fau-banner.png,
+    %            
         % Author
         author/.initial         = Dr. Fernando Koch,
         author/email/.initial   = kochf@fau.edu,
@@ -42,19 +48,21 @@ Check the [main.tex](main.tex) template provided with this package.
 
 
 \begin{document}
-    \slideCover{Lesson 1 \\ Introduction}
-    \slideAgenda{
-        \begin{itemize}
-        \item Topic 1
-        \item Topic 2
-        \item Topic 3
-        \end{itemize}
-   }
+     \slideCover{Lesson 1 \\ Introduction}
+     \slideAgenda{
+         \begin{itemize}
+            \item Topic 1
+            \item Topic 2
+            \item Topic 3
+         \end{itemize}
+    }
+
     \slideTeleprompt{Topic 1}{\input{tests/text-1.txt}}
     \slideDouble{Topic 2}{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
     \slideTextImage{Topic 3}{tests/img-1.png}{\input{tests/text-1.txt}}
     \slideBackCover{}
 \end{document}
+
 
 ```
 
