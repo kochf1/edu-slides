@@ -19,7 +19,7 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 
 ## Getting Started:
 
-![Quick Example](example-1.gif)
+![Quick Example](images/example-1.gif)
 
 ```
 \documentclass[aspectratio=169]{beamer}
