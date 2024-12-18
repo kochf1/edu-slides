@@ -1,4 +1,4 @@
-%% edu-style.sty :: a Simple and Obvious Latex Slide Maker
+%% edu-style.sty :: style for Simple Education Slides.
 %% Copyright 2024 Fernando Koch
 %
 % This work may be distributed and/or modified under the
@@ -19,8 +19,6 @@
 % Disclaimer: 
 % GPT4o has been applied for the development of source code and documentation through this package
 %
-% Version:
-% v0.1.0 - Dec-2014
 
 \ProvidesPackage{edu-slides}
 \RequirePackage[absolute,overlay]{textpos}
@@ -31,6 +29,7 @@
 \RequirePackage[none]{hyphenat}
 \RequirePackage{datetime2}
 \RequirePackage{avant}
+
 
 %%%
 %%%  GLOBAL PARAMETERS
@@ -59,23 +58,24 @@
         course/logo/.initial    = ,
     %
         % Debug
-        debug/layout/.initial   = false,
-        debug/compTime/.initial = false,
+        debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
+        debug/time/.initial = true,         %% add marker with time of compilation on Cover and BackCover
 }
-
-
 
 %%%
 %%% COLORS
 %%% Define the default colors for the template.
 %%% You can define your own colors on your document and setup 
-%%% the default colors by calling \layoutDefaultColors{text}{bullets}
+%%% the default colors by calling :
+%%%     layoutDefaultColors{text}{bullets}
 %%%
 
 \definecolor{fau-blue}{RGB}{0, 51, 102}
 \definecolor{fau-red}{RGB}{204, 0, 0}
 \definecolor{fau-silver}{RGB}{77, 76, 85}
 \definecolor{fau-gray}{RGB}{204, 204, 204}
+\definecolor{fau-shade}{RGB}{240, 240, 240}
+
 \newcommand{\defaultColor}{fau-blue}
 
 %% @doc Configure colors for Text and Bullets
@@ -87,9 +87,12 @@
     \setbeamercolor{itemize item}{fg=#2}
 }
 
+\layoutDefaultColors{fau-blue}{fau-red}
+
 
 %%%
 %%% FONTS
+%%% Define the default fonts for the template.
 %%%
 
 \pgfkeys{
@@ -107,13 +110,17 @@
         body/size/.initial   = 10,
         body/space/.initial  = 11,
     %
+        % Section
+        section/size/.initial   = 14,
+        section/space/.initial  = 11,
+    %
         % Title
         title/size/.initial  = 20,
         title/space/.initial = 20,
     %
         % Large
         large/size/.initial  = 32,
-        large/space/.initial = 20,
+        large/space/.initial = 34,
     %
         % Big
         big/size/.initial    = 44,
@@ -121,368 +128,88 @@
 }
 
 %%%
-%%% BOX ANCHORS
+%%% LAYOUT MAKER
 %%%
 
+% Set page dimensions
+\geometry{paperwidth=16cm, paperheight=9cm}
+\setlength{\textwidth}{16cm}
+\setlength{\textheight}{9cm}
+
+% Define paddings and key positions
 \pgfkeys{
     /anchor/.is family,
     /anchor/.cd,
-        % X coordinates
-        x/page/left/.initial   = 0.0cm,
-        x/page/middle/.initial = 6.0cm,
-        x/page/right/.initial  = 8.0cm,
-        x/box/left/.initial    = 0.4cm,
-        x/box/middle/.initial  = 6.3cm,  
-        x/box/right/.initial   = 8.1cm,
-    %    
-        % DX distances
-        dx/page/.initial          = 16.0cm,
-        dx/page/third/.initial    = 6.2cm,
-        dx/page/half/.initial     = 7.9cm,
-        dx/page/twothird/.initial = 9.2cm,
-        dx/box/full/.initial      = 14.9cm,
-        dx/box/third/.initial     = 5.5cm,
-        dx/box/half/.initial      = 7.2cm,
-        dx/box/twothird/.initial  = 9.0cm,
-    %    
-        % Y coordinates
-        y/header/.initial       = 0.3cm,
-        y/footer/.initial       = 8.4cm,
-        y/page/top/.initial     = 0.0cm,
-        y/page/middle/.initial  = 3.0cm,
-        y/page/half/.initial    = 4.5cm,
-        y/page/bottom/.initial  = 6.0cm,
-        y/box/top/.initial      = 2.0cm,
-        y/box/middle/.initial   = 4.05cm,
-        y/box/midbottom/.initial= 5.1cm,
-        y/box/bottom/.initial   = 6.1cm,
-    %    
-        % DY distances
-        dy/header/.initial      = 1.4cm,
-        dy/footer/.initial      = 0.5cm,
-        dy/box/full/.initial    = 6.0cm,
-        dy/box/third/.initial   = 1.9cm,
-        dy/box/half/.initial    = 3.0cm,
-        dy/page/.initial        = 9.0cm,
-        dy/page/half/.initial   = 5.0cm,
-        dy/page/third/.initial  = 3.0cm,
+%
+    page/x/.initial = 0.0cm,
+    page/y/.initial = 0.0cm,
+    page/width/.initial = 16.0cm,
+    page/height/.initial = 9.0cm,
+%
+    header/x/.initial = 0.4cm,
+    header/y/.initial = 0.2cm,
+    header/width/.initial = 15.2cm,
+    header/height/.initial = 1.4cm,
+%
+    body/x/.initial = \pgfkeysvalueof{/anchor/header/x},
+    body/y/.initial = 1.8cm,
+    body/width/.initial = \pgfkeysvalueof{/anchor/header/width},
+    body/height/.initial = 6.2cm,
+%
+    footer/x/.initial = \pgfkeysvalueof{/anchor/header/x},
+    footer/y/.initial = 8.2cm,
+    footer/width/.initial = \pgfkeysvalueof{/anchor/header/width},
+    footer/height/.initial = 0.8cm,
 }
 
-
-%%%
-%%% BLOCKS
-%%% Define positional blocks within the Slide Page
-%%%
-
+% Define keys and their defaults
 \pgfkeys{
-    /block/.is family,
-    /block/.cd,
-        % @block Header with Full-width
-        % call as: \layoutObject{/header/full}{c}{c}{/header/full}
-        header/full/x/.initial  = \pgfkeysvalueof{/anchor/x/box/left},
-        header/full/y/.initial  = \pgfkeysvalueof{/anchor/y/header},
-        header/full/dx/.initial = \pgfkeysvalueof{/anchor/dx/box/full},
-        header/full/dy/.initial = \pgfkeysvalueof{/anchor/dy/header}, 
-    %  
-        % @block Header with Half-width on the Left-Side
-        % call as: \layoutObject{/header/half/left}{c}{c}{/header/half/left}
-        header/half/left/x/.initial  = \pgfkeysvalueof{/anchor/x/box/left},
-        header/half/left/y/.initial  = \pgfkeysvalueof{/anchor/y/header},
-        header/half/left/dx/.initial = \pgfkeysvalueof{/anchor/dx/box/half},
-        header/half/left/dy/.initial = \pgfkeysvalueof{/anchor/dy/header}, 
-    %  
-        % @block Header with Half-width on the Right-Side
-        % call as: \layoutObject{/header/half/right}{c}{c}{/header/half/left}
-        header/half/right/x/.initial  = \pgfkeysvalueof{/anchor/x/box/right},
-        header/half/right/y/.initial  = \pgfkeysvalueof{/anchor/y/header},
-        header/half/right/dx/.initial = \pgfkeysvalueof{/anchor/dx/box/half},
-        header/half/right/dy/.initial = \pgfkeysvalueof{/anchor/dy/header}, 
-    %
-        % @block Footer with Full-width
-        % call as: \layoutObject{/footer/full}{c}{c}{/footer/full}
-        footer/full/x/.initial  = \pgfkeysvalueof{/anchor/x/box/left},
-        footer/full/y/.initial  = \pgfkeysvalueof{/anchor/y/footer},
-        footer/full/dx/.initial = \pgfkeysvalueof{/anchor/dx/box/full},
-        footer/full/dy/.initial = \pgfkeysvalueof{/anchor/dy/footer}, 
-    %
-        % @block Footer with Half-width on the Left-Side
-        % call as: \layoutObject{/footer/half/left}{c}{c}{/footer/half/left}
-        footer/half/left/x/.initial  = \pgfkeysvalueof{/anchor/x/box/left},
-        footer/half/left/y/.initial  = \pgfkeysvalueof{/anchor/y/footer},
-        footer/half/left/dx/.initial = \pgfkeysvalueof{/anchor/dx/box/half},
-        footer/half/left/dy/.initial = \pgfkeysvalueof{/anchor/dy/footer}, 
-    %
-        % @block Footer with Half-width on the Right-Side
-        % call as: \layoutObject{/footer/half/right}{c}{c}{/footer/half/right}
-        footer/half/right/x/.initial  = \pgfkeysvalueof{/anchor/x/box/right},
-        footer/half/right/y/.initial  = \pgfkeysvalueof{/anchor/y/footer},
-        footer/half/right/dx/.initial = \pgfkeysvalueof{/anchor/dx/box/half},
-        footer/half/right/dy/.initial = \pgfkeysvalueof{/anchor/dy/footer}, 
-    %    
-        % @block Box with Page-height, Full-width
-        % call as: \layoutObject{/page/full}{c}{c}{/page/full}
-        page/full/x/.initial    = \pgfkeysvalueof{/anchor/x/page/left},
-        page/full/y/.initial    = \pgfkeysvalueof{/anchor/y/page/top},
-        page/full/dx/.initial   = \pgfkeysvalueof{/anchor/dx/page},
-        page/full/dy/.initial   = \pgfkeysvalueof{/anchor/dy/page}, 
-    %    
-        % @block Box on Half-Page-height, Page-width position on the Top
-        % call as: \layoutObject{/page/half/top}{c}{c}{/page/half/top}
-        page/half/top/x/.initial     = \pgfkeysvalueof{/anchor/x/page/left},
-        page/half/top/y/.initial     = \pgfkeysvalueof{/anchor/y/page/top},
-        page/half/top/dx/.initial    = \pgfkeysvalueof{/anchor/dx/page},
-        page/half/top/dy/.initial    = \pgfkeysvalueof{/anchor/dy/page/half}, 
-    %
-        % @block Box on Half-Page-height, Page-width position on the Bottom
-        % call as: \layoutObject{/page/half/bottom}{c}{c}{/page/half/bottom}
-        page/half/bottom/x/.initial  = \pgfkeysvalueof{/anchor/x/page/left},
-        page/half/bottom/y/.initial  = \pgfkeysvalueof{/anchor/y/page/half},
-        page/half/bottom/dx/.initial = \pgfkeysvalueof{/anchor/dx/page},
-        page/half/bottom/dy/.initial = \pgfkeysvalueof{/anchor/dy/page/half},
-    %
-        % @block Box with Page-height and Left Half-width
-        % call as: \layoutObject{/page/half/left}{c}{c}{/page/half/left}
-        page/half/left/x/.initial   = \pgfkeysvalueof{/anchor/x/page/left},
-        page/half/left/y/.initial   = \pgfkeysvalueof{/anchor/y/page/top},
-        page/half/left/dx/.initial  = \pgfkeysvalueof{/anchor/dx/page/half},
-        page/half/left/dy/.initial  = \pgfkeysvalueof{/anchor/dy/page}, 
-    %    
-        % @block Box with Page-height and Right Half-width
-        % call as: \layoutObject{/page/half/right}{c}{c}{/page/half/right}
-        page/half/right/x/.initial  = \pgfkeysvalueof{/anchor/x/page/right},
-        page/half/right/y/.initial  = \pgfkeysvalueof{/anchor/y/page/top},
-        page/half/right/dx/.initial = \pgfkeysvalueof{/anchor/dx/page/half},
-        page/half/right/dy/.initial = \pgfkeysvalueof{/anchor/dy/page}, 
-    %
-        % @block Page Third-height, Full-width
-        % call as: \layoutObject{/page/third/top}{c}{c}{/page/third/top}
-        page/third/top/x/.initial     = \pgfkeysvalueof{/anchor/x/page/left},
-        page/third/top/y/.initial     = \pgfkeysvalueof{/anchor/y/page/top},
-        page/third/top/dx/.initial    = \pgfkeysvalueof{/anchor/dx/page},
-        page/third/top/dy/.initial    = \pgfkeysvalueof{/anchor/dy/page/third}, 
-    %
-        % @block Page Third-height, Full-width in the Middle
-        % call as: \layoutObject{/page/third/middle}{c}{c}{/page/third/middle}
-        page/third/middle/x/.initial  = \pgfkeysvalueof{/anchor/x/page/left},
-        page/third/middle/y/.initial  = \pgfkeysvalueof{/anchor/y/page/middle},
-        page/third/middle/dx/.initial = \pgfkeysvalueof{/anchor/dx/page},
-        page/third/middle/dy/.initial = \pgfkeysvalueof{/anchor/dy/page/third},
-    %
-        % @block Page Third-height, Full-width at the Bottom
-        % call as: \layoutObject{/page/third/bottom}{c}{c}{/page/third/bottom}
-        page/third/bottom/x/.initial  = \pgfkeysvalueof{/anchor/x/page/left},
-        page/third/bottom/y/.initial  = \pgfkeysvalueof{/anchor/y/page/bottom},
-        page/third/bottom/dx/.initial = \pgfkeysvalueof{/anchor/dx/page},
-        page/third/bottom/dy/.initial = \pgfkeysvalueof{/anchor/dy/page/third},
-    %
-        % @block Page Padded Full-height, Half-width
-        page/padded/left/x/.initial   = \pgfkeysvalueof{/anchor/x/box/left},
-        page/padded/left/y/.initial   = \pgfkeysvalueof{/anchor/y/header},
-        page/padded/left/dx/.initial  = \pgfkeysvalueof{/anchor/dx/box/half},
-        page/padded/left/dy/.initial  = \pgfkeysvalueof{/anchor/dy/page}, 
-    %    
-        page/padded/right/x/.initial  = \pgfkeysvalueof{/anchor/x/box/right},
-        page/padded/right/y/.initial  = \pgfkeysvalueof{/anchor/y/header},
-        page/padded/right/dx/.initial = \pgfkeysvalueof{/anchor/dx/box/half},
-        page/padded/right/dy/.initial = \pgfkeysvalueof{/anchor/dy/page}, 
-    %
-        % @block Box with Full-height and Full-width
-        % call as: \layoutObject{/box/full}{c}{c}{/box/full}
-        box/full/x/.initial         = \pgfkeysvalueof{/anchor/x/box/left},
-        box/full/y/.initial         = \pgfkeysvalueof{/anchor/y/box/top},
-        box/full/dx/.initial        = \pgfkeysvalueof{/anchor/dx/box/full},
-        box/full/dy/.initial        = \pgfkeysvalueof{/anchor/dy/box/full},
-    %
-        % @block Box Half-Height, Full-width at the Top  
-        % call as: \layoutObject{/box/half/top}{c}{c}{/box/half/top}
-        box/half/top/x/.initial   = \pgfkeysvalueof{/anchor/x/box/left},
-        box/half/top/y/.initial   = \pgfkeysvalueof{/anchor/y/box/top},
-        box/half/top/dx/.initial  = \pgfkeysvalueof{/anchor/dx/box/full},
-        box/half/top/dy/.initial  = \pgfkeysvalueof{/anchor/dy/box/half}, 
-    %
-        % @block Box Half-Height, Full-width at the Bottom  
-        % call as: \layoutObject{/box/half/bottom}{c}{c}{/box/half/bottom}
-        box/half/bottom/x/.initial   = \pgfkeysvalueof{/anchor/x/box/left},
-        box/half/bottom/y/.initial   = \pgfkeysvalueof{/anchor/y/box/midbottom},
-        box/half/bottom/dx/.initial  = \pgfkeysvalueof{/anchor/dx/box/full},
-        box/half/bottom/dy/.initial  = \pgfkeysvalueof{/anchor/dy/box/half}, 
-    %
-        % @block Box Full-height, Half-width (Left)
-        % call as: \layoutObject{/box/half/left}{c}{c}{/box/half/left}
-        box/half/left/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        box/half/left/y/.initial    = \pgfkeysvalueof{/anchor/y/box/top},
-        box/half/left/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/half},
-        box/half/left/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/full}, 
-    %    
-        % @block Box Full-height, Half-width (Right)
-        % call as: \layoutObject{/box/half/right}{c}{c}{/box/half/right}
-        box/half/right/x/.initial   = \pgfkeysvalueof{/anchor/x/box/right},
-        box/half/right/y/.initial   = \pgfkeysvalueof{/anchor/y/box/top},
-        box/half/right/dx/.initial  = \pgfkeysvalueof{/anchor/dx/box/half},
-        box/half/right/dy/.initial  = \pgfkeysvalueof{/anchor/dy/box/full}, 
-    %    
-        % @block Box Third-height, Full-width (Top)
-        % call as: \layoutObject{/box/third/full/top}{c}{c}{/box/third/full/top}
-        box/third/full/top/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        box/third/full/top/y/.initial    = \pgfkeysvalueof{/anchor/y/box/top},
-        box/third/full/top/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/full},
-        box/third/full/top/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third}, 
-    %
-        % @block Box Third-height, Full-width (Middle)
-        % call as: \layoutObject{/box/third/full/middle}{c}{c}{/box/third/full/middle}
-        box/third/full/middle/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        box/third/full/middle/y/.initial    = \pgfkeysvalueof{/anchor/y/box/middle},
-        box/third/full/middle/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/full},
-        box/third/full/middle/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third}, 
-    %
-        % @block Box Third-height, Full-width (Bottom)
-        % call as: \layoutObject{/box/third/full/bottom}{c}{c}{/box/third/full/bottom}
-        box/third/full/bottom/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        box/third/full/bottom/y/.initial    = \pgfkeysvalueof{/anchor/y/box/bottom},
-        box/third/full/bottom/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/full},
-        box/third/full/bottom/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third}, 
-    %
-        % @block Box Third-height, Half-width (Left, Top)
-        % call as: \layoutObject{/box/third/left/top}{c}{c}{/box/third/left/top}
-        box/third/left/top/x/.initial       = \pgfkeysvalueof{/anchor/x/box/left},
-        box/third/left/top/y/.initial       = \pgfkeysvalueof{/anchor/y/box/top},
-        box/third/left/top/dx/.initial      = \pgfkeysvalueof{/anchor/dx/box/half},
-        box/third/left/top/dy/.initial      = \pgfkeysvalueof{/anchor/dy/box/third}, 
-    %    
-        % @block Box Third-height, Half-width (Left, Middle)
-        % call as: \layoutObject{/box/third/left/middle}{c}{c}{/box/third/left/middle}
-        box/third/left/middle/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        box/third/left/middle/y/.initial    = \pgfkeysvalueof{/anchor/y/box/middle},
-        box/third/left/middle/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/half},
-        box/third/left/middle/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third}, 
-    %    
-        % @block Box Third-height, Half-width (Left, Bottom)
-        % call as: \layoutObject{/box/third/left/bottom}{c}{c}{/box/third/left/bottom}
-        box/third/left/bottom/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        box/third/left/bottom/y/.initial    = \pgfkeysvalueof{/anchor/y/box/bottom},
-        box/third/left/bottom/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/half},
-        box/third/left/bottom/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third}, 
-    %    
-        % @block Box Third-height, Half-width (Right, Top)
-        % call as: \layoutObject{/box/third/right/top}{c}{c}{/box/third/right/top}
-        box/third/right/top/x/.initial      = \pgfkeysvalueof{/anchor/x/box/right},
-        box/third/right/top/y/.initial      = \pgfkeysvalueof{/anchor/y/box/top},
-        box/third/right/top/dx/.initial     = \pgfkeysvalueof{/anchor/dx/box/half},
-        box/third/right/top/dy/.initial     = \pgfkeysvalueof{/anchor/dy/box/third}, 
-    %    
-        % @block Box Third-height, Half-width (Right, Middle)
-        % call as: \layoutObject{/box/third/right/middle}{c}{c}{/box/third/right/middle}
-        box/third/right/middle/x/.initial   = \pgfkeysvalueof{/anchor/x/box/right},
-        box/third/right/middle/y/.initial   = \pgfkeysvalueof{/anchor/y/box/middle},
-        box/third/right/middle/dx/.initial  = \pgfkeysvalueof{/anchor/dx/box/half},
-        box/third/right/middle/dy/.initial  = \pgfkeysvalueof{/anchor/dy/box/third}, 
-    %    
-        % @block Box Third-height, Half-width (Right, Bottom)
-        % call as: \layoutObject{/box/third/right/bottom}{c}{c}{/box/third/right/bottom}
-        box/third/right/bottom/x/.initial   = \pgfkeysvalueof{/anchor/x/box/right},
-        box/third/right/bottom/y/.initial   = \pgfkeysvalueof{/anchor/y/box/bottom},
-        box/third/right/bottom/dx/.initial  = \pgfkeysvalueof{/anchor/dx/box/half},
-        box/third/right/bottom/dy/.initial  = \pgfkeysvalueof{/anchor/dy/box/third}, 
-    %   
-        % @block Box Half-height, Third-width (Left, Top)
-        % call as: \layoutObject{/third/third/left/top}{c}{c}{/third/third/left/top}
-        third/third/left/top/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        third/third/left/top/y/.initial    = \pgfkeysvalueof{/anchor/y/box/top},
-        third/third/left/top/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/third},
-        third/third/left/top/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third},
-    %
-        % @block Box Half-height, Third-width (Left, Middle)
-        % call as: \layoutObject{/third/third/left/middle}{c}{c}{/third/third/left/middle}
-        third/third/left/middle/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        third/third/left/middle/y/.initial    = \pgfkeysvalueof{/anchor/y/box/middle},
-        third/third/left/middle/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/third},
-        third/third/left/middle/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third},  
-    %
-        % @block Box Half-height, Third-width (Left, Bottom)
-        % call as: \layoutObject{/third/third/left/bottom}{c}{c}{/third/third/left/bottom}
-        third/third/left/bottom/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        third/third/left/bottom/y/.initial    = \pgfkeysvalueof{/anchor/y/box/bottom},
-        third/third/left/bottom/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/third},
-        third/third/left/bottom/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third},  
-    %
-        % @block Box Half-height, Third-width (Left, Top)
-        % call as: \layoutObject{/half/third/left/top}{c}{c}{/half/third/left/top}
-        half/third/left/top/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        half/third/left/top/y/.initial    = \pgfkeysvalueof{/anchor/y/box/top},
-        half/third/left/top/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/third},
-        half/third/left/top/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/half},
-    %
-        % @block Box Half-height, Third-width (Left, Bottom)
-        % call as: \layoutObject{/half/third/left/bottom}{c}{c}{/half/third/left/bottom}
-        half/third/left/bottom/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        half/third/left/bottom/y/.initial    = \pgfkeysvalueof{/anchor/y/box/midbottom},
-        half/third/left/bottom/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/third},
-        half/third/left/bottom/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/half},  
-    % 
-        % @block Box Half-height, TwoThird-width (Right, Top)
-        % call as: \layoutObject{/half/twothird/right/top}{c}{c}{/half/twothird/right/top}
-        half/twothird/right/top/x/.initial    = \pgfkeysvalueof{/anchor/x/box/middle},
-        half/twothird/right/top/y/.initial    = \pgfkeysvalueof{/anchor/y/box/top},
-        half/twothird/right/top/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/twothird},
-        half/twothird/right/top/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/half},
-    %
-        % @block Box Half-height, TwoThird-width (Right, Bottom)
-        % call as: \layoutObject{/half/twothird/right/bottom}{c}{c}{/half/twothird/right/bottom}
-        half/twothird/right/bottom/x/.initial    = \pgfkeysvalueof{/anchor/x/box/middle},
-        half/twothird/right/bottom/y/.initial    = \pgfkeysvalueof{/anchor/y/box/midbottom},
-        half/twothird/right/bottom/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/twothird},
-        half/twothird/right/bottom/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/half},  
-    % 
-        % @block Box Third-height, Third-width (Left, Top)
-        % call as: \layoutObject{/third/third/left/top}{c}{c}{/third/third/left/top}
-        third/third/left/top/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        third/third/left/top/y/.initial    = \pgfkeysvalueof{/anchor/y/box/top},
-        third/third/left/top/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/third},
-        third/third/left/top/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third},
-    %
-        % @block Box Third-height, Third-width (Left, Middle)
-        % call as: \layoutObject{/third/third/left/middle}{c}{c}{/third/third/left/middle}
-        third/third/left/middle/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        third/third/left/middle/y/.initial    = \pgfkeysvalueof{/anchor/y/box/middle},
-        third/third/left/middle/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/third},
-        third/third/left/middle/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third},  
-    %
-        % @block Box Third-height, Third-width (Left, Bottom)
-        % call as: \layoutObject{/third/third/left/bottom}{c}{c}{/third/third/left/bottom}
-        third/third/left/bottom/x/.initial    = \pgfkeysvalueof{/anchor/x/box/left},
-        third/third/left/bottom/y/.initial    = \pgfkeysvalueof{/anchor/y/box/bottom},
-        third/third/left/bottom/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/third},
-        third/third/left/bottom/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third}, 
-    %
-        % @block Box Third-height, TwoThird-width (Right, Top)
-        % call as: \layoutObject{/third/twothird/right/top}{c}{c}{/third/twothird/right/top}
-        third/twothird/right/top/x/.initial    = \pgfkeysvalueof{/anchor/x/box/middle},
-        third/twothird/right/top/y/.initial    = \pgfkeysvalueof{/anchor/y/box/top},
-        third/twothird/right/top/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/twothird},
-        third/twothird/right/top/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third},
-    %
-        % @block Box Third-height, TwoThird-width (Right, Middle)
-        % call as: \layoutObject{/third/twothird/right/middle}{c}{c}{/third/twothird/right/middle}
-        third/twothird/right/middle/x/.initial    = \pgfkeysvalueof{/anchor/x/box/middle},
-        third/twothird/right/middle/y/.initial    = \pgfkeysvalueof{/anchor/y/box/middle},
-        third/twothird/right/middle/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/twothird},
-        third/twothird/right/middle/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third},  
-    %
-        % @block Box Third-height, TwoThird-width (Right, Bottom)
-        % call as: \layoutObject{/third/twothird/right/bottom}{c}{c}{/third/twothird/right/bottom}
-        third/twothird/right/bottom/x/.initial    = \pgfkeysvalueof{/anchor/x/box/middle},
-        third/twothird/right/bottom/y/.initial    = \pgfkeysvalueof{/anchor/y/box/bottom},
-        third/twothird/right/bottom/dx/.initial   = \pgfkeysvalueof{/anchor/dx/box/twothird},
-        third/twothird/right/bottom/dy/.initial   = \pgfkeysvalueof{/anchor/dy/box/third},  
+    /layoutParams/.is family,
+    /layoutParams/.cd,
+    target/.initial=body,           % Target block (header, body, footer)
+    slicesH/.initial=1,             % Number of horizontal slices
+    slicesV/.initial=1,             % Number of vertical slices
+    targetH/.initial=1,             % Target horizontal slice
+    targetV/.initial=1,             % Target vertical slice
+    mergeH/.initial=1,              % Number of horizontal slices to merge
+    mergeV/.initial=1,              % Number of vertical slices to merge,
+    padLeft/.initial=0.0cm,         % Padding at the left
+    padRight/.initial=0.0cm,        % Padding at the right
+    padTop/.initial=0.0cm,          % Padding at the top
+    padBottom/.initial=0.0cm,       % Padding at the bottom
+    halign/.initial=c,              % Horizontal alignment
+    valign/.initial=c,              % Vertical alignment
+    font/.initial=body,             % font-style (for objects with Text)
+    color/.initial=\defaultColor,   % font-color (for objects with Text)
+    keepaspect/.initial=true,       % keep aspect ratio (for Image objects)
+    half/.initial=false             % generic designation if this layout should be half-ed
 }
 
+% internal command
+\newcommand{\resetLayoutParams}{ 
+    \pgfkeyssetvalue{/layoutParams/slicesH}{1}%
+    \pgfkeyssetvalue{/layoutParams/slicesV}{1}%
+    \pgfkeyssetvalue{/layoutParams/targetH}{1}%
+    \pgfkeyssetvalue{/layoutParams/targetV}{1}%
+    \pgfkeyssetvalue{/layoutParams/mergeH}{1}%
+    \pgfkeyssetvalue{/layoutParams/mergeV}{1}%
+    \pgfkeyssetvalue{/layoutParams/halign}{c}%
+    \pgfkeyssetvalue{/layoutParams/valign}{c}%
+    \pgfkeyssetvalue{/layoutParams/padLeft}{0.0cm}%
+    \pgfkeyssetvalue{/layoutParams/padRight}{0.0cm}%
+    \pgfkeyssetvalue{/layoutParams/padTop}{0.0cm}%
+    \pgfkeyssetvalue{/layoutParams/padBottom}{0.0cm}%
+    \pgfkeyssetvalue{/layoutParams/valign}{c}%
+    \pgfkeyssetvalue{/layoutParams/font}{body}%
+    \pgfkeyssetvalue{/layoutParams/color}{\defaultColor}%
+    \pgfkeyssetvalue{/layoutParams/keepaspect}{true}%
+    \pgfkeyssetvalue{/layoutParams/half}{false}%
+}
+\resetLayoutParams
 
-%%%
-%%%  LAYOUT MAKERS
-%%%
 
-% internal command used by lObject
-\newcommand{\internalObject}[5]{ 
+% internal command
+\newcommand{\internalOutline}[5]{ 
     \begin{minipage}[#4][#2]{#1}%
         \ifthenelse{\equal{#3}{l}}{\raggedright}{}
         \ifthenelse{\equal{#3}{c}}{\centering}{}
@@ -491,72 +218,134 @@
     \end{minipage}
 }
 
-
-%% @layout Container for any type of Object
-%% params: box(x,y,dx,dy){1}, halign{2}, valign{3}, object{4}
-\newcommand{\layoutObject}[4]{ 
-    \edef\boxX{\pgfkeysvalueof{/block#1/x}}
-    \edef\boxY{\pgfkeysvalueof{/block#1/y}}
-    \edef\boxDX{\pgfkeysvalueof{/block#1/dx}}
-    \edef\boxDY{\pgfkeysvalueof{/block#1/dy}}
+%% @layout Create the container for any type of Object
+%% params: x{1}, y{2}, dx{3}, dy{4}, halign{5}, valign{6}, object{7}
+\newcommand{\layoutOutline}[7]{ 
     \edef\debug{\pgfkeysvalueof{/params/debug/layout}}
-
-    \begin{textblock*}{\boxDX}(\boxX,\boxY)
-        \begin{minipage}{\boxDX}
+    
+    \begin{textblock*}{#3}(#1,#2)
+        \begin{minipage}{#3}
             \ifthenelse{\boolean{\debug}}{
                 \setlength{\fboxsep}{0pt}
-                \fbox{\internalObject{\boxDX}{\boxDY}{#2}{#3}{#4}}
+                \fbox{\internalOutline{#3}{#4}{#5}{#6}{#7}}
             }{
-                \internalObject{\boxDX}{\boxDY}{#2}{#3}{#4}
+                \internalOutline{#3}{#4}{#5}{#6}{#7}
             }
         \end{minipage}
     \end{textblock*}
 }
 
+
+%% @layout Create a layout for any type of Object.
+%% it is expected that the coordinates have been previously calculated through:
+%%      \layoutCalculator{layoutParams}
+%% params: layoutParams{1}, object{2}
+\newcommand{\layoutCreator}[2]{
+    \pgfkeys{/layoutParams/.cd, #1}
+    \pgfmathsetlengthmacro{\x}{\pgfkeysvalueof{/layoutParams/coordinate/x}}%
+    \pgfmathsetlengthmacro{\y}{\pgfkeysvalueof{/layoutParams/coordinate/y}}%
+    \pgfmathsetlengthmacro{\dx}{\pgfkeysvalueof{/layoutParams/coordinate/dx}}%
+    \pgfmathsetlengthmacro{\dy}{\pgfkeysvalueof{/layoutParams/coordinate/dy}}%
+    \edef\halign{\pgfkeysvalueof{/layoutParams/halign}}%
+    \edef\valign{\pgfkeysvalueof{/layoutParams/valign}}%
+
+    % Make the layout with the provided Object
+    \layoutOutline{\x}{\y}{\dx}{\dy}{\halign}{\valign}{#2}%
+}
+
+%% @layout Calculate and load the coordinates for the container
+%% params: layoutParams{1}
+\newcommand{\layoutCalculator}[1]{% 
+    \pgfkeys{/layoutParams/.cd, #1}%
+
+    % Load the target block dimensions and position
+    \edef\slicesH{\pgfkeysvalueof{/layoutParams/slicesH}}%
+    \edef\slicesV{\pgfkeysvalueof{/layoutParams/slicesV}}%
+    \edef\targetH{\pgfkeysvalueof{/layoutParams/targetH}}%
+    \edef\targetV{\pgfkeysvalueof{/layoutParams/targetV}}%
+    \edef\mergeH{\pgfkeysvalueof{/layoutParams/mergeH}}%
+    \edef\mergeV{\pgfkeysvalueof{/layoutParams/mergeV}}%
+    \edef\padLeft{\pgfkeysvalueof{/layoutParams/padLeft}}%
+    \edef\padRight{\pgfkeysvalueof{/layoutParams/padRight}}%
+    \edef\padTop{\pgfkeysvalueof{/layoutParams/padTop}}%
+    \edef\padBottom{\pgfkeysvalueof{/layoutParams/padBottom}}%
+    \pgfmathsetlengthmacro{\blockX}{\pgfkeysvalueof{/anchor/\pgfkeysvalueof{/layoutParams/target}/x}}%
+    \pgfmathsetlengthmacro{\blockY}{\pgfkeysvalueof{/anchor/\pgfkeysvalueof{/layoutParams/target}/y}}%
+    \pgfmathsetlengthmacro{\blockWidth}{\pgfkeysvalueof{/anchor/\pgfkeysvalueof{/layoutParams/target}/width}}%
+    \pgfmathsetlengthmacro{\blockHeight}{\pgfkeysvalueof{/anchor/\pgfkeysvalueof{/layoutParams/target}/height}}%
+
+    % Calculate size of each block
+    \pgfmathsetlengthmacro{\blockDX}{((\blockWidth / \slicesH) - 0.4cm) - (\padLeft + \padRight) }%
+    \pgfmathsetlengthmacro{\blockDY}{((\blockHeight / \slicesV) - 0.1cm)  - (\padTop + \padBottom)  }%
+
+    % Calculate slice coordinates
+    \pgfmathsetlengthmacro{\x}{(\blockX + (\targetH-1)*\blockDX + (\targetH-1)*0.4cm) + \padLeft}%
+    \pgfmathsetlengthmacro{\y}{(\blockY + (\targetV-1)*\blockDY + (\targetV-1)*0.1cm) + \padTop}%
+
+    % Calculate slice dimensions
+    \pgfmathsetlengthmacro{\dx}{(\mergeH  * \blockDX + (\mergeH-1)*0.4cm) - \padRight}%
+    \pgfmathsetlengthmacro{\dy}{(\mergeV  * \blockDY + (\mergeV-1)*0.1cm) - \padBottom}%
+
+    % Load coordinates
+    \pgfkeyssetvalue{/layoutParams/coordinate/x}{\x}%
+    \pgfkeyssetvalue{/layoutParams/coordinate/y}{\y}%
+    \pgfkeyssetvalue{/layoutParams/coordinate/dx}{\dx}%
+    \pgfkeyssetvalue{/layoutParams/coordinate/dy}{\dy}%
+}
+
+
 %% @layout Container for Text Box
-%% params: anchor(x,y,dx,dy){1}, halign{2}, valign{3}, font{4}, text{5}
-\newcommand{\layoutText}[5]{
-    \edef\lFontSize{\pgfkeysvalueof{/font#4/size}}
-    \edef\lFontSpace{\pgfkeysvalueof{/font#4/space}}
-    \layoutObject{#1}{#2}{#3}{\fontsize{\lFontSize}{\lFontSpace} \selectfont #5}
+%% params: layoutParams{1}, text{2}
+\newcommand{\layoutText}[2][]{
+    \resetLayoutParams
+    \pgfkeys{/layoutParams/.cd, #1}%
+    \layoutCalculator{#1}
+    \edef\myFontSize{\pgfkeysvalueof{/font/\pgfkeysvalueof{/layoutParams/font}/size}}
+    \edef\myFontSpace{\pgfkeysvalueof{/font/\pgfkeysvalueof{/layoutParams/font}/space}}
+    \edef\myFontColor{\pgfkeysvalueof{/layoutParams/color}}
+
+    \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont \textcolor{\myFontColor}{#2}}
 }
 
 %% @layout Container for Image Box
-%% params: anchor(x,y,dx,dy){1}, halign{2}, valign{3}, keepaspect{4}, image{5}
-\newcommand{\layoutImage}[5]{
-    \edef\boxDX{\pgfkeysvalueof{/block#1/dx}}
-    \edef\boxDY{\pgfkeysvalueof{/block#1/dy}}
+%% params: layoutParams{1}, image{2}
+\newcommand{\layoutImage}[2][]{
+    \resetLayoutParams
+    \pgfkeys{/layoutParams/.cd, #1}%
+    \layoutCalculator{#1}
+    \pgfmathsetlengthmacro{\dx}{\pgfkeysvalueof{/layoutParams/coordinate/dx}}%
+    \pgfmathsetlengthmacro{\dy}{\pgfkeysvalueof{/layoutParams/coordinate/dy}}%
+    \edef\keepaspect{\pgfkeysvalueof{/layoutParams/keepaspect}}
 
-    \IfFileExists{#5}{
-        \ifthenelse{\boolean{#4}}{
-            \def\graphicOption{\includegraphics[width=\boxDX,height=\boxDY,keepaspectratio]{#5}}
+    \IfFileExists{#2}{
+        \ifthenelse{\boolean{\keepaspect}}{
+            \def\graphicOption{\includegraphics[width=\dx, height=\dy, keepaspectratio]{#2}}
         }{
-            \def\graphicOption{\includegraphics[width=\boxDX,height=\boxDY]{#5}}
+            \def\graphicOption{\includegraphics[width=\dx, height=\dy]{#2}}
         }
-        \layoutObject{#1}{#2}{#3}{\graphicOption}
+        \layoutCreator{#1}{\graphicOption}
     }{
-        \layoutObject{#1}{c}{c}{\textcolor{red}{\textbf{Not Found: \\ '#5'}}}%
+        \layoutCreator{#1}{\textcolor{red}{\textbf{Not Found: \\ '#2'}}}%
     }
 }
 
 %% @layout Container for Colored Box
-%% params: anchor(x,y,dx,dy){1}, color{2}
-\newcommand{\layoutColor}[2]{
-    \edef\boxX{\pgfkeysvalueof{/block#1/x}}
-    \edef\boxY{\pgfkeysvalueof{/block#1/y}}
-    \edef\boxDX{\pgfkeysvalueof{/block#1/dx}}
-    \edef\boxDY{\pgfkeysvalueof{/block#1/dy}}
-    \begin{textblock*}{\boxDX}(\boxX,\boxY)
+%% params: layoutParams{1}, color{2}
+\newcommand{\layoutColor}[2][]{
+    \resetLayoutParams
+    \pgfkeys{/layoutParams/.cd, #1}%
+    \layoutCalculator{#1}
+    \pgfmathsetlengthmacro{\x}{\pgfkeysvalueof{/layoutParams/coordinate/x}}%
+    \pgfmathsetlengthmacro{\y}{\pgfkeysvalueof{/layoutParams/coordinate/y}}%
+    \pgfmathsetlengthmacro{\dx}{\pgfkeysvalueof{/layoutParams/coordinate/dx}}%
+    \pgfmathsetlengthmacro{\dy}{\pgfkeysvalueof{/layoutParams/coordinate/dy}}%
+    \begin{textblock*}{\dx}(\x,\y)
         \begingroup 
-            \color{#2} \rule{\boxDX}{\boxDY}
+            \color{#2} \rule{\dx}{\dy}
         \endgroup
     \end{textblock*}
     
 }
-
-%%%
-%%% INITIALIZATION
-%%%
 
 %%%
 %%%  SLIDE ELEMENTS
@@ -565,41 +354,44 @@
 %% @layout Add Logo to Top-Left corner
 %% params: none
 \newcommand{\elementLogo}{
-    \layoutImage{/header/half/left}{l}{c}{true}{\pgfkeysvalueof{/params/logo}}
+    \layoutImage[target=header,halign=l]{\pgfkeysvalueof{/params/logo}}
 }
 
 %% @layout Add Banner to Bottom-Left corner
 %% params: none
 \newcommand{\elementBanner}{
-    \layoutImage{/footer/half/left}{l}{c}{true}{\pgfkeysvalueof{/params/banner}} 
+    \layoutImage[target=footer, slicesH=2, halign=l]{\pgfkeysvalueof{/params/banner}}
 }
 
-
 %% @layout Add Title to Header, Full- or Half-size (false) 
-%% params: size(true is Full-size){1}, title{2}
-\newcommand{\elementTitle}[2]{
-    \ifthenelse{\boolean{#1}}
-        { \layoutText{/header/full}{l}{c}{/title}{#2} } %% Full-size
-        { \layoutText{/header/half/left}{l}{c}{/title}{#2} } %% Half-Size
-    
+%% params: layoutParams{1}, title{2}
+\newcommand{\elementTitle}[2][]{
+    \resetLayoutParams
+    \pgfkeys{/layoutParams/.cd, #1}%
+    \ifthenelse{\boolean{\pgfkeysvalueof{/layoutParams/half}}}
+        {\layoutText[target=header, slicesH=2, halign=l, font=title]{#2}}
+        {\layoutText[target=header, halign=l, font=title]{#2}}
 }
 
 %% @layout Add Compilation Time marker to Footer
-%% params: position (left, center, right){1}
+%% params: halign{1}
 \newcommand{\elementCompilationTime}[1]{
-    \ifthenelse{\boolean{\pgfkeysvalueof{/params/debug/compTime}}}
-        {\layoutText{/footer/full}{#1}{c}{/tiny}{Compiled on \today{} at \DTMcurrenttime}}
+    \ifthenelse{\boolean{\pgfkeysvalueof{/params/debug/time}}}
+        {\layoutText[target=footer, halign=#1, valign=b, font=tiny]{Compiled on \today{} at \DTMcurrenttime}}
         {} 
 }
 
 
 %%%
 %%%  SLIDE MAKERS
+%%%  These are the user-friendly interfaces providing easy-to-use Templates
 %%%
 
 %% @template Cover
-%% Open the presentation with a title
-%% params: title{1}
+%% Open the presentation with a title.
+%% Example:
+%%      \slideCover{Lesson 1 \\ Introductions}
+%% params: lesson{1}
 \newcommand{\slideCover}[1]{ 
     \edef\course{\pgfkeysvalueof{/params/course}}
     \edef\courseCode{\pgfkeysvalueof{/params/course/code}}
@@ -615,20 +407,21 @@
         %% Course Logo
         %% If Course Logo is EMPTY, then default to Color Box with \defaultcolor
         \ifthenelse{\equal{\courseLogo}{}}
-           { \layoutColor{/page/half/right}{\defaultColor} }
-           { \layoutImage{/page/half/right}{r}{c}{true}{\courseLogo} }
+           { \layoutColor[target=page, slicesH=2, targetH=2]{\defaultColor} }
+           { \layoutImage[target=page, slicesH=2, targetH=2]{\courseLogo} }
 
         %% Course Code & Course Name
+
         \ifthenelse{\equal{\courseCode}{}}{}
             {\ifthenelse{\equal{\course}{}}{}
-            {\layoutText{/box/third/left/top}{l}{t}{/body}{\courseCode \\ \course}}}
+             {\layoutText[target=body, slicesH=2, slicesV=3, targetV=1, halign=l, valign=t, font=body]{\courseCode \\ \course}}}
 
         %% Lesson Title
-        \layoutText{/box/third/left/middle}{l}{c}{/title}{#1}
+        \layoutText[target=body, slicesH=2, slicesV=3, targetV=2, halign=l, font=title]{#1}
 
         %% Author information
         \ifthenelse{\equal{\author}{}}{}
-            {\layoutText{/box/third/left/bottom}{l}{b}{/body}{\textbf{\author} \\ \email \\ \link}}
+            {\layoutText[target=body, slicesH=2, slicesV=3, targetV=3, halign=l, valign=b]{\textbf{\author} \\ \email \\ \link}}
         
         %% Compilation time
         \elementCompilationTime{l}
@@ -638,19 +431,22 @@
 
 %% @template Agenda
 %% Present the Agenda
-%% params: title{1}, text{2}
+%% Example:
+%%     \slideAgenda{1. Introduction \\ 2. Main Topics \\ 3. Conclusion} 
+%% params: agenda{1}
 \newcommand{\slideAgenda}[1]{ 
     \begin{frame}[plain]
-    \elementTitle{false}{Agenda} %% Title
-    \layoutColor{/page/half/right}{\defaultColor} %% Color Box on the Right
-    \layoutText{/box/half/left}{l}{t}{/body}{#1} %% Text on the Left
+    \elementTitle[half=true]{Agenda} %% Title
+    \layoutColor[target=page, slicesH=2, targetH=2]{\defaultColor} %% Color Box on the Right
+    \layoutText[target=body, slicesH=2, targetH=1, halign=l, valign=t]{#1} %% Text on the Left
     \elementBanner
     \end{frame}
 }
 
-
 %% @template Back Cover
-%% Close the presentation
+%% Closing slides at the end of the presentation
+%% Example:
+%%      \slideBackCover
 %% params: none
 \newcommand{\slideBackCover}{ 
     \edef\logo{\pgfkeysvalueof{/params/logo}}
@@ -661,12 +457,13 @@
 
     \begin{frame}[plain]
         %% Logo on Mid-Page
-        \layoutImage{/page/third/middle}{c}{b}{true}{\logo}
+        \layoutImage[target=page, slicesH=3, targetH=2, slicesV=3, targetV=2]{\logo}
 
         %% Course Code & Course Name
         \ifthenelse{\equal{\courseCode}{}}{}
             {\ifthenelse{\equal{\course}{}}{}
-            {\layoutText{/page/third/bottom}{c}{c}{/body}{\courseCode~-~\course \\[1\baselineskip] \textbf{\author} \\ \email}}}
+            {\layoutText[target=page, slicesV=3, targetV=3, valign=c]
+                {\courseCode~-~\course \\[1\baselineskip] \textbf{\author} \\ \email}}}
         
         %% Compilation time
         \elementCompilationTime{c}
@@ -676,147 +473,244 @@
 
 %% @template Teleprompt (Title + Text)
 %% Display a title and accompanying full-box text
+%% Example:
+%%      \slideTeleprompt{Title}{Body Text}
 %% params: title{1}, text{2}
 \newcommand{\slideTeleprompt}[2]{ 
     \begin{frame}[plain]
-    \elementTitle{true}{#1} %% Title
-    \layoutText{/box/full}{l}{t}{/body}{#2} %% Text on Full-box
+    \elementTitle{#1} %% Title
+    \layoutText[target=body, halign=l, valign=t]{#2} %% Text on Full-box
     \elementBanner
     \end{frame}
 }
 
 %% @template Double (Title + Text + Text)
 %% Present a title with two sections of text, one on the left and one on the right
+%% Example:
+%%      \slideDouble{Title}{Left Text}{Right Text}
 %% params: title{1}, text(left){2}, text(right){3}
 \newcommand{\slideDouble}[3]{ 
     \begin{frame}[plain]
-    \elementTitle{true}{#1}  %% Title
-    \layoutText{/box/half/left}{l}{t}{/body}{#2} %% Text on the Left-box
-    \layoutText{/box/half/right}{l}{t}{/body}{#3} %% Text on the Right-box
+    \elementTitle[half=true]{#1} %% Title
+    \layoutText[target=body, slicesH=2, targetH=1, halign=l, valign=t]{#2} %% Text on the Left-box
+    \layoutText[target=body, slicesH=2, targetH=2, halign=l, valign=t]{#3} %% Text on the Right-box
     \elementBanner
     \end{frame}
 }
 
 %% @template TextImage (Title + Text + Image)
 %% Combine a title with text on the left and an image on the right
+%% Example:
+%%      \slideTextImage{Title}{image.png}{Right Text}
 %% params: title{1}, image{2}, text{3}
 \newcommand{\slideTextImage}[3]{ 
     \begin{frame}[plain]
-    \elementTitle{true}{#1} %% Title
-    \layoutText{/box/half/left}{l}{t}{/body}{#3} %% Text on the Left-box
-    \layoutImage{/box/half/right}{c}{c}{true}{#2} %% Image on the Right-box
+    \elementTitle[half=true]{#1} %% Title
+    \layoutText[target=body, slicesH=2, targetH=1, halign=l, valign=t]{#3} %% Text on the Left-box
+    \layoutImage[target=body, slicesH=2, targetH=2]{#2} %% Image on the Right-box
     \elementBanner
     \end{frame}
 }
 
 %% @template ImageText (Title + Image + Text)
 %% Pair a title with an image on the left and text on the right
+%% Example:
+%%      \slideImageText{Title}{image.png}{Right Text}
 %% params: title{1}, image{2}, text{3}
 \newcommand{\slideImageText}[3]{ 
     \begin{frame}[plain]
-    \elementTitle{true}{#1} %% Title
-    \layoutImage{/box/half/left}{c}{c}{true}{#2} %% Image on the Left-box
-    \layoutText{/box/half/right}{l}{t}{/body}{#3} %% Text on the Right-box
+    \elementTitle[half=true]{#1} %% Title
+    \layoutText[target=body, slicesH=2, targetH=2, halign=l, valign=t]{#3} %% Text on the Left-box
+    \layoutImage[target=body, slicesH=2, targetH=1]{#2} %% Image on the Left-box
     \elementBanner
     \end{frame}
 }
 
 %% @template Image (Title + Image)
 %% Show a title and a full-box image
+%% Example:
+%%      \slideImage{Title}{image.png}
 %% params: title{1}, image{2}
 \newcommand{\slideImage}[2]{ 
     \begin{frame}[plain]
-    \elementTitle{true}{#1} %% Title
-    \layoutImage{/box/full}{c}{c}{true}{#2} %% Image on Full-box
+    \elementTitle{#1} %% Title
+    \layoutImage[target=body]{#2} %% Image
     \elementBanner
     \end{frame}
 }
 
 %% @template DobleImage (Title + Image + Image)
 %% Include a title with two side-by-side images, one on the left and one on the right
+%% Example:
+%%      \slideDoubleImage{image.png}{image.png}
 %% params: title{1}, image(left){2}, image(right){2}
 \newcommand{\slideDoubleImage}[3]{ 
     \begin{frame}[plain]
-    \elementTitle{true}{#1} %% Title
-    \layoutImage{/box/half/left}{c}{c}{true}{#2} %% Image on the Left-box
-    \layoutImage{/box/half/right}{c}{c}{true}{#3} %% Image on the Right-box
+    \elementTitle{#1} %% Title
+    \layoutImage[target=body, slicesH=2, targetH=1]{#2}  %% Image on the Left-box
+    \layoutImage[target=body, slicesH=2, targetH=2]{#3} %% Image on the Right-box
     \elementBanner
     \end{frame}
 }
 
 %% @template BigImage (Full-Page Big Image)
-%% Display a full-page, single image without additional elements
+%% Display a full-page, single image on the whole page
+%% Example:
+%%      \slideBigImage{image.png}
 %% params: image{1}
 \newcommand{\slideBigImage}[1]{ 
     \begin{frame}[plain]
-    \layoutImage{/page/full}{c}{c}{true}{#1} %% Image on Full-page
+    \layoutImage[target=page]{#1} %% Image on Full-page
     \end{frame}
 }
 
 %% @template Quote (Full-Page Big Text)
 %% Highlight a full-page, prominent quote
+%% Example:
+%%      \slideQuote{Text}
 %% params: quote{1}
 \newcommand{\slideQuote}[1]{ 
     \begin{frame}[plain]
-    \layoutText{/page/full}{c}{c}{/big}{#1} %% Big Text on Full-page
+    \layoutText[target=page, font=big]{#1} %% Quote on Full-page
     \end{frame}
 }
 
 %% @template QuoteText (Quote (left) + Text)
-%% air a large quote on the left with accompanying text on the right
+%% Pair a large quote on the left with accompanying text on the right
+%% Example:
+%%      \slideQuoteText{Quote}{Text}
 %% params: quote{1}, text{2}
 \newcommand{\slideQuoteText}[2]{ 
     \begin{frame}[plain]
-    \layoutText{/page/padded/left}{l}{c}{/large}{#1} %% Large Text on Left-box
-    \layoutText{/page/padded/right}{l}{c}{/body}{#2} %% Text on Right-box
+    \layoutText[target=page, slicesH=2, targetH=1, halign=l, valign=c, padLeft=0.2cm, font=large]{#1} %% Text on the Left-box
+    \layoutText[target=page, slicesH=2, targetH=2, halign=l, valign=c, font=body]{#2} %% Text on the Right-box
     \elementBanner
     \end{frame}
 }
 
-%% @template TextQuote (Text (left) + Quote)
-%% Combine text on the left with a large quote on the right
+%% @template TextQuote (Text + Quote (right))
+%% Pair a a text on the left with a large quote on the right
+%% Example:
+%%      \slideQuote{Quote}{Text}
 %% params: quote{1}, text{2}
 \newcommand{\slideTextQuote}[2]{ 
     \begin{frame}[plain]
-    \layoutText{/page/padded/right}{l}{c}{/large}{#1} %% Large Text on Right-box
-    \layoutText{/page/padded/left}{l}{c}{/body}{#2} %% Text on Left-box
+    \layoutText[target=page, slicesH=2, targetH=2, halign=r, padRight=0.2cm, font=large]{#1} %% Text on the Right-box
+    \layoutText[target=page, slicesH=2, targetH=1, halign=l, padLeft=0.2cm, font=body]{#2} %% Text on the Left-box
     \elementBanner
     \end{frame}
 }
 
+
 %% @template QA (Quote (Top) + Text)
 %% Present a large quote on top with supporting text at the bottom
+%% Example:
+%%      \slideQA{Could this really work?}{A: It all depends}
 %% params: quote{1}, text{2}
 \newcommand{\slideQA}[2]{ 
     \begin{frame}[plain]
-    \layoutText{/page/half/top}{c}{c}{/large}{#1} %% Large Text on Top
-    \layoutText{/box/third/full/bottom}{c}{c}{/title}{#2} %% Text at Bottom
+    \layoutText[target=page, slicesV=2, targetV=1, font=large]{#1} %% Text on the Right-box
+    \layoutText[target=page, slicesV=2, targetV=2, font=title]{#2}
     \elementBanner
     \end{frame}
 }
 
 %% @template Literature (Big Image (left) + Text + Link)
 %% Showcase a large image on the left, text on the top-right, and a link in the bottom-right
-%% params: image{1}, text{2}, link{3}
+%% Example:
+%%      \slideLiterature{tests/book-cover.png}{http://somewhere.com/book}{\input{tests/book-chapters.txt}}
+%% params: image{1},  link{2}, text{3},
 \newcommand{\slideLiterature}[3]{ 
     \begin{frame}[plain]
-    \layoutImage{/page/half/left}{l}{c}{true}{#1} %% Image on the Left
-    \layoutText{/page/padded/right}{l}{t}{/body}{#3} %% Text on Top-Right
-    \layoutText{/footer/half/right}{c}{t}{/small}{#2} %% Link on the Bottom-Right
+    \layoutImage[target=page, slicesH=2, targetH=1, halign=l]{#1} %% Book Cover on the Left
+    \layoutText[target=page, slicesH=2, targetH=2, valign=t, padTop=0.4cm, font=body]{#3} %% Book description on the Right
+    \layoutText[target=footer, slicesH=2, targetH=2, font=small]{#2} %% Link at the bottom    
+    
     \end{frame}
 }
 
-
-%%%
-%%% INITIALIZATION 
-%%% This will setup Colors and eventually other required configurations.
-%%%
-
-%% @doc Initialize default configurations
-%% param: text{1},bullets{2}
-\newcommand{\layoutInitialization}{
-    \layoutDefaultColors{fau-blue}{fau-red}
+%% @template Concept (Title + 1x (Concept + Explanation))
+%% Present a page with ONE Concept on the Left and its explanation on the Right
+%% Example:
+%%      \slideConcept{slideConcept}{Concept}{Explanation text}
+%% params: title{1},  concept{2}, explanation{3},
+\newcommand{\slideConcept}[3]{ 
+    \begin{frame}[plain]
+    \elementTitle{#1}
+    \layoutColor[target=body, slicesH=3, targetH=1]{fau-shade}
+    \layoutText[target=body, slicesH=3, targetH=1, font=section]{\textbf{#2}} 
+    \layoutText[target=body, slicesH=3, targetH=2, mergeH=2, halign=l]{#3} 
+    \elementBanner
+    \end{frame}
 }
-\layoutInitialization
 
+%% @template Concepts Two (Title + 2x (Concept + Explanation))
+%% Present a page with TWO Concepts on the Left and their explanatiosn on the Right
+%% Example:
+%%      \slideConceptTwo{slideConceptTwo}{Concept 1}{Explanation text}{Concept 2}{Explanation text}
+%% params: title{1}, concept_1{2}, explanation_1{3}, concept_2{4}, explanation_2{5}
+\newcommand{\slideConceptTwo}[5]{ 
+    \begin{frame}[plain]
+    \elementTitle{#1}
+    \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1]{fau-shade}
+    \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+    \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1]{\textbf{#2}}
+    \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#3} 
 
+    \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1]{\textbf{#4}}
+    \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#5}
+    \elementBanner
+    \end{frame}
+}
+
+%% @template Concepts Three (Title + 3x (Concept + Explanation))
+%% Present a page with THREE Concepts on the Left and their explanatiosn on the Right
+%% Example:
+%%      \slideConceptThree{slideConceptThree}{Concept 1}{Explanation text}{Concept 2}{Explanation text}{Concept 3}{Explanation text}
+%% params: title{1}, concept_1{2}, explanation_1{3}, concept_2{4}, explanation_2{5}, concept_3{6}, explanation_3{7}
+\newcommand{\slideConceptThree}[7]{ 
+    \begin{frame}[plain]
+    \elementTitle{#1}
+
+    \layoutColor[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1]{fau-shade}
+    \layoutColor[target=body, slicesV=3, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+    \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1]{~~\textbf{#2}}
+    \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#3}
+
+    \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=1]{\textbf{#4}}
+    \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#5}
+
+    \layoutColor[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1]{fau-shade}
+    \layoutColor[target=body, slicesV=3, targetV=3, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+    \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1]{\textbf{#6}}
+    \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=2, mergeH=2, halign=l]{#7}
+    \elementBanner
+    \end{frame}
+}
+
+%% @template Concepts Four (Title + 4x (Concept + Explanation))
+%% Present a page with FOUR Concepts on the Left and their explanatiosn on the Right
+%% Example:
+%%      \slideConceptFour{slideConceptFour}{Concept 1}{Explanation text}{Concept 2}{Explanation text}{Concept 3}{Explanation text}
+%% params: title{1}, concept_1{2}, explanation_1{3}, concept_2{4}, explanation_2{5}, concept_3{6}, explanation_3{7}, concept_4{8}, explanation_4{9}
+\newcommand{\slideConceptFour}[9]{ 
+    \begin{frame}[plain]
+    \elementTitle{#1}
+    \layoutColor[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1]{fau-shade}
+    \layoutColor[target=body, slicesV=4, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+    \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1]{\textbf{#2}}
+    \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#3} 
+
+    \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=1]{\textbf{#4}}
+    \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#5}
+
+    \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1]{fau-shade}
+    \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+    \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1]{\textbf{#6}}
+    \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=2, mergeH=2, halign=l]{#7}
+
+    \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=1]{\textbf{#8}}
+    \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=2, mergeH=2, halign=l]{#9}
+    \elementBanner
+    \end{frame}
+}

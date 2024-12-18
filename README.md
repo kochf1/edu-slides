@@ -42,7 +42,7 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
         % Course
         course/.initial         = Principles of Software Engineering,
         course/code/.initial    = CEN~4010,
-        course/logo/.initial    = images/cen4010-logo.png,
+        course/logo/.initial    = images/course-logo.png,
 }
 
 
@@ -66,6 +66,6 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 ```
 
 ## Disclaimer: 
-GPT4o has been applied for the development of source code and documentation through this package
+GPT4o has been applied for the development and documentation of this package.
 
 **Copyright 2024 Fernando Koch**
