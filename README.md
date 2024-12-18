@@ -19,12 +19,13 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 
 ## Getting Started:
 
-![Quick Example](images/example-1.gif)
-
 ```
 \documentclass[aspectratio=169]{beamer}
 \usepackage{edu-slides}
 
+%%
+%% (1) Define the presentation parameters here
+%%
 \pgfkeys{
     /params/.is family,
     /params/.cd,
@@ -46,6 +47,10 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 }
 
 
+%%
+%% (2) Configure the sequence of slides applying our easy-to-use templates
+%% (Note: the complete set of templates can be tested through main.tex)
+%%
 \begin{document}
      \slideCover{Lesson 1 \\ Introduction}
      \slideAgenda{
@@ -64,6 +69,12 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 
 
 ```
+
+## Example:
+
+This is the PDF resulting from [main.tex](./main.tex).
+
+![Quick Example](images/example-1.gif)
 
 ## Disclaimer: 
 GPT4o has been applied for the development and documentation of this package.
