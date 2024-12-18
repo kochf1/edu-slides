@@ -74,7 +74,7 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 
 This is the PDF resulting from [main.tex](./main.tex).
 
-![Quick Example](images/main.gif)
+![Animated GIF of main.pdf](images/main.gif)
 
 ## Disclaimer: 
 GPT4o has been applied for the development and documentation of this package.
