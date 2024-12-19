@@ -10,7 +10,7 @@ prototyping of presentations.
 
 The package includes predefined templates  for common slide types (e.g., cover, agenda, 
 text-image, quotes), diverse layout options, and automated features. Users can define 
-global parameters Through the use of key-value configurations (pgfkeys), including logos, 
+global parameters through the use of key-value configurations (pgfkeys), including logos, 
 colors, fonts, and layout dimensions, making it easy to tailor the presentation 
 to institutional branding. 
 

@@ -1,6 +1,7 @@
 %%
 %% Copyright 2024 Fernando Koch
 %% edu-style.sty, Latex style for Simple Education Slides.
+%% v0.1 Initial Release
 %
 % This work may be distributed and/or modified under the
 % conditions of the LaTeX Project Public License, either version 1.3
@@ -108,28 +109,28 @@
         small/space/.initial = 8,
     %
         % Body
-        body/size/.initial   = 10,
-        body/space/.initial  = 11,
+        body/size/.initial   = 8,
+        body/space/.initial  = 10,
     %
         % Section
-        section/size/.initial   = 16,
+        section/size/.initial   = 14,
         section/space/.initial  = 12,
     %
         % Title
-        title/size/.initial  = 20,
+        title/size/.initial  = 18,
         title/space/.initial = 20,
     %
         % large
-        large/size/.initial  = 26,
-        large/space/.initial = 25,
+        large/size/.initial  = 24,
+        large/space/.initial = 26,
     %
         % larger
-        larger/size/.initial  = 32,
-        larger/space/.initial = 30,
+        larger/size/.initial  = 30,
+        larger/space/.initial = 32,
     %
         % Big
-        big/size/.initial    = 44,
-        big/space/.initial   = 40
+        big/size/.initial    = 40,
+        big/space/.initial   = 38
 }
 
 %%%
@@ -178,10 +179,10 @@
     targetV/.initial=1,             % Target vertical slice
     mergeH/.initial=1,              % Number of horizontal slices to merge
     mergeV/.initial=1,              % Number of vertical slices to merge,
-    padLeft/.initial=0.0cm,         % Padding at the left
-    padRight/.initial=0.0cm,        % Padding at the right
-    padTop/.initial=0.0cm,          % Padding at the top
-    padBottom/.initial=0.0cm,       % Padding at the bottom
+    padL/.initial=0.0cm,         % Padding at the left
+    padR/.initial=0.0cm,        % Padding at the right
+    padT/.initial=0.0cm,          % Padding at the top
+    padB/.initial=0.0cm,       % Padding at the bottom
     halign/.initial=c,              % Horizontal alignment
     valign/.initial=c,              % Vertical alignment
     font/.initial=body,             % font-style (for objects with Text)
@@ -200,10 +201,10 @@
     \pgfkeyssetvalue{/layoutParams/mergeV}{1}%
     \pgfkeyssetvalue{/layoutParams/halign}{c}%
     \pgfkeyssetvalue{/layoutParams/valign}{c}%
-    \pgfkeyssetvalue{/layoutParams/padLeft}{0.0cm}%
-    \pgfkeyssetvalue{/layoutParams/padRight}{0.0cm}%
-    \pgfkeyssetvalue{/layoutParams/padTop}{0.0cm}%
-    \pgfkeyssetvalue{/layoutParams/padBottom}{0.0cm}%
+    \pgfkeyssetvalue{/layoutParams/padL}{0.0cm}%
+    \pgfkeyssetvalue{/layoutParams/padR}{0.0cm}%
+    \pgfkeyssetvalue{/layoutParams/padT}{0.0cm}%
+    \pgfkeyssetvalue{/layoutParams/padB}{0.0cm}%
     \pgfkeyssetvalue{/layoutParams/valign}{c}%
     \pgfkeyssetvalue{/layoutParams/font}{body}%
     \pgfkeyssetvalue{/layoutParams/color}{\defaultColor}%
@@ -270,26 +271,26 @@
     \edef\targetV{\pgfkeysvalueof{/layoutParams/targetV}}%
     \edef\mergeH{\pgfkeysvalueof{/layoutParams/mergeH}}%
     \edef\mergeV{\pgfkeysvalueof{/layoutParams/mergeV}}%
-    \edef\padLeft{\pgfkeysvalueof{/layoutParams/padLeft}}%
-    \edef\padRight{\pgfkeysvalueof{/layoutParams/padRight}}%
-    \edef\padTop{\pgfkeysvalueof{/layoutParams/padTop}}%
-    \edef\padBottom{\pgfkeysvalueof{/layoutParams/padBottom}}%
+    \edef\padL{\pgfkeysvalueof{/layoutParams/padL}}%
+    \edef\padR{\pgfkeysvalueof{/layoutParams/padR}}%
+    \edef\padT{\pgfkeysvalueof{/layoutParams/padT}}%
+    \edef\padB{\pgfkeysvalueof{/layoutParams/padB}}%
     \pgfmathsetlengthmacro{\blockX}{\pgfkeysvalueof{/anchor/\pgfkeysvalueof{/layoutParams/target}/x}}%
     \pgfmathsetlengthmacro{\blockY}{\pgfkeysvalueof{/anchor/\pgfkeysvalueof{/layoutParams/target}/y}}%
     \pgfmathsetlengthmacro{\blockWidth}{\pgfkeysvalueof{/anchor/\pgfkeysvalueof{/layoutParams/target}/width}}%
     \pgfmathsetlengthmacro{\blockHeight}{\pgfkeysvalueof{/anchor/\pgfkeysvalueof{/layoutParams/target}/height}}%
 
     % Calculate size of each block
-    \pgfmathsetlengthmacro{\blockDX}{((\blockWidth / \slicesH) - 0.4cm) - (\padLeft + \padRight) }%
-    \pgfmathsetlengthmacro{\blockDY}{((\blockHeight / \slicesV) - 0.1cm)  - (\padTop + \padBottom)  }%
+    \pgfmathsetlengthmacro{\blockDX}{((\blockWidth / \slicesH) - 0.4cm) - (\padL + \padR) }%
+    \pgfmathsetlengthmacro{\blockDY}{((\blockHeight / \slicesV) - 0.1cm)  - (\padT + \padB)  }%
 
     % Calculate slice coordinates
-    \pgfmathsetlengthmacro{\x}{(\blockX + (\targetH-1)*\blockDX + (\targetH-1)*0.4cm) + \padLeft}%
-    \pgfmathsetlengthmacro{\y}{(\blockY + (\targetV-1)*\blockDY + (\targetV-1)*0.1cm) + \padTop}%
+    \pgfmathsetlengthmacro{\x}{(\blockX + (\targetH-1)*\blockDX + (\targetH-1)*0.4cm) + \padL}%
+    \pgfmathsetlengthmacro{\y}{(\blockY + (\targetV-1)*\blockDY + (\targetV-1)*0.1cm) + \padT}%
 
     % Calculate slice dimensions
-    \pgfmathsetlengthmacro{\dx}{(\mergeH  * \blockDX + (\mergeH-1)*0.4cm) - \padRight}%
-    \pgfmathsetlengthmacro{\dy}{(\mergeV  * \blockDY + (\mergeV-1)*0.1cm) - \padBottom}%
+    \pgfmathsetlengthmacro{\dx}{(\mergeH  * \blockDX + (\mergeH-1)*0.4cm) - \padR}%
+    \pgfmathsetlengthmacro{\dy}{(\mergeV  * \blockDY + (\mergeV-1)*0.1cm) - \padB}%
 
     % Load coordinates
     \pgfkeyssetvalue{/layoutParams/coordinate/x}{\x}%
@@ -576,7 +577,7 @@
 %% params: quote{1}
 \newcommand{\slideQuote}[1]{ 
     \begin{frame}[plain]
-    \layoutText[target=page, font=big]{#1} %% Quote on Full-page
+    \layoutText[target=page, padL=0.4cm, padR=0.2cm, font=big]{#1} %% Quote on Full-page
     \end{frame}
 }
 
@@ -587,7 +588,7 @@
 %% params: quote{1}, text{2}
 \newcommand{\slideQuoteText}[2]{ 
     \begin{frame}[plain]
-    \layoutText[target=page, slicesH=2, targetH=1, halign=l, valign=c, padLeft=0.2cm, font=larger]{#1} %% Text on the Left-box
+    \layoutText[target=page, slicesH=2, targetH=1, halign=r, valign=c, padL=0.2cm, font=larger]{#1} %% Text on the Left-box
     \layoutText[target=page, slicesH=2, targetH=2, halign=l, valign=c, font=body]{#2} %% Text on the Right-box
     \elementBanner
     \end{frame}
@@ -600,8 +601,8 @@
 %% params: quote{1}, text{2}
 \newcommand{\slideTextQuote}[2]{ 
     \begin{frame}[plain]
-    \layoutText[target=page, slicesH=2, targetH=2, halign=r, padRight=0.2cm, font=larger]{#1} %% Text on the Right-box
-    \layoutText[target=page, slicesH=2, targetH=1, halign=l, padLeft=0.2cm, font=body]{#2} %% Text on the Left-box
+    \layoutText[target=page, slicesH=2, targetH=2, halign=l, padR=0.2cm, font=larger]{#1} %% Text on the Right-box
+    \layoutText[target=page, slicesH=2, targetH=1, halign=l, padL=0.2cm, font=body]{#2} %% Text on the Left-box
     \elementBanner
     \end{frame}
 }
@@ -628,7 +629,7 @@
 \newcommand{\slideLiterature}[3]{ 
     \begin{frame}[plain]
     \layoutImage[target=page, slicesH=2, targetH=1, halign=l]{#1} %% Book Cover on the Left
-    \layoutText[target=page, slicesH=2, targetH=2, valign=t, padTop=0.4cm, font=body]{#3} %% Book description on the Right
+    \layoutText[target=page, slicesH=2, targetH=2, valign=t, padT=0.4cm, font=body]{#3} %% Book description on the Right
     \layoutText[target=footer, slicesH=2, targetH=2, font=small]{#2} %% Link at the bottom    
     
     \end{frame}
