@@ -72,7 +72,7 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 
 ## Example:
 
-This is the PDF resulting from [main.tex](./main.tex).
+This is the presentation resulting from [main.tex](./main.tex) ([PDF](./main.pdf) attached)
 
 ![Animated GIF of main.pdf](images/main.gif)
 
