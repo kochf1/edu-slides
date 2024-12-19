@@ -75,7 +75,7 @@
 \definecolor{fau-red}{RGB}{204, 0, 0}
 \definecolor{fau-silver}{RGB}{77, 76, 85}
 \definecolor{fau-gray}{RGB}{204, 204, 204}
-\definecolor{fau-shade}{RGB}{240, 240, 240}
+\colorlet{fau-shade}{fau-blue!10}
 
 \newcommand{\defaultColor}{fau-blue}
 
@@ -112,16 +112,20 @@
         body/space/.initial  = 11,
     %
         % Section
-        section/size/.initial   = 14,
-        section/space/.initial  = 11,
+        section/size/.initial   = 16,
+        section/space/.initial  = 12,
     %
         % Title
         title/size/.initial  = 20,
         title/space/.initial = 20,
     %
-        % Large
-        large/size/.initial  = 32,
-        large/space/.initial = 34,
+        % large
+        large/size/.initial  = 26,
+        large/space/.initial = 25,
+    %
+        % larger
+        larger/size/.initial  = 32,
+        larger/space/.initial = 30,
     %
         % Big
         big/size/.initial    = 44,
@@ -577,26 +581,26 @@
 }
 
 %% @template QuoteText (Quote (left) + Text)
-%% Pair a large quote on the left with accompanying text on the right
+%% Pair a larger quote on the left with accompanying text on the right
 %% Example:
 %%      \slideQuoteText{Quote}{Text}
 %% params: quote{1}, text{2}
 \newcommand{\slideQuoteText}[2]{ 
     \begin{frame}[plain]
-    \layoutText[target=page, slicesH=2, targetH=1, halign=l, valign=c, padLeft=0.2cm, font=large]{#1} %% Text on the Left-box
+    \layoutText[target=page, slicesH=2, targetH=1, halign=l, valign=c, padLeft=0.2cm, font=larger]{#1} %% Text on the Left-box
     \layoutText[target=page, slicesH=2, targetH=2, halign=l, valign=c, font=body]{#2} %% Text on the Right-box
     \elementBanner
     \end{frame}
 }
 
 %% @template TextQuote (Text + Quote (right))
-%% Pair a a text on the left with a large quote on the right
+%% Pair a a text on the left with a larger quote on the right
 %% Example:
 %%      \slideQuote{Quote}{Text}
 %% params: quote{1}, text{2}
 \newcommand{\slideTextQuote}[2]{ 
     \begin{frame}[plain]
-    \layoutText[target=page, slicesH=2, targetH=2, halign=r, padRight=0.2cm, font=large]{#1} %% Text on the Right-box
+    \layoutText[target=page, slicesH=2, targetH=2, halign=r, padRight=0.2cm, font=larger]{#1} %% Text on the Right-box
     \layoutText[target=page, slicesH=2, targetH=1, halign=l, padLeft=0.2cm, font=body]{#2} %% Text on the Left-box
     \elementBanner
     \end{frame}
@@ -604,20 +608,20 @@
 
 
 %% @template QA (Quote (Top) + Text)
-%% Present a large quote on top with supporting text at the bottom
+%% Present a larger quote on top with supporting text at the bottom
 %% Example:
 %%      \slideQA{Could this really work?}{A: It all depends}
 %% params: quote{1}, text{2}
 \newcommand{\slideQA}[2]{ 
     \begin{frame}[plain]
-    \layoutText[target=page, slicesV=2, targetV=1, font=large]{#1} %% Text on the Right-box
+    \layoutText[target=page, slicesV=2, targetV=1, font=larger]{#1} %% Text on the Right-box
     \layoutText[target=page, slicesV=2, targetV=2, font=title]{#2}
     \elementBanner
     \end{frame}
 }
 
 %% @template Literature (Big Image (left) + Text + Link)
-%% Showcase a large image on the left, text on the top-right, and a link in the bottom-right
+%% Showcase a larger image on the left, text on the top-right, and a link in the bottom-right
 %% Example:
 %%      \slideLiterature{tests/book-cover.png}{http://somewhere.com/book}{\input{tests/book-chapters.txt}}
 %% params: image{1},  link{2}, text{3},
@@ -630,17 +634,43 @@
     \end{frame}
 }
 
+
+%%%
+%%% CONCEPT PRESENTATION 
+%%%
+
+\pgfkeys{
+    /conceptParams/.is family,
+    /conceptParams/.cd,
+        title/.initial  = a,
+        one/.initial    = a,
+        two/.initial    = a,
+        three/.initial  = a,
+        four/.initial   = a,
+        font/.initial   = body,
+        color/.initial  = true,
+}
+
+
 %% @template Concept (Title + 1x (Concept + Explanation))
 %% Present a page with ONE Concept on the Left and its explanation on the Right
 %% Example:
-%%      \slideConcept{slideConcept}{Concept}{Explanation text}
-%% params: title{1},  concept{2}, explanation{3},
-\newcommand{\slideConcept}[3]{ 
+%%      \slideConcept[title=slideConcept, font=big, one=72\%]{\input{tests/text-1.txt}}
+%% params: conceptParams{1}, explain_1{2}
+\newcommand{\slideConcept}[2][]{ 
+    \pgfkeys{/conceptParams/.cd, #1}
+    \edef\myFont{\pgfkeysvalueof{/conceptParams/font}}%
+    \edef\myColor{\pgfkeysvalueof{/conceptParams/color}}%
+
     \begin{frame}[plain]
-    \elementTitle{#1}
-    \layoutColor[target=body, slicesH=3, targetH=1]{fau-shade}
-    \layoutText[target=body, slicesH=3, targetH=1, font=section]{\textbf{#2}} 
-    \layoutText[target=body, slicesH=3, targetH=2, mergeH=2, halign=l]{#3} 
+    \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
+
+    \ifthenelse{\boolean{\myColor}{}}{
+        \layoutColor[target=body, slicesH=3, targetH=1]{fau-shade}
+    }{}
+
+    \layoutText[target=body, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/one}} 
+    \layoutText[target=body, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
     \elementBanner
     \end{frame}
 }
@@ -648,43 +678,58 @@
 %% @template Concepts Two (Title + 2x (Concept + Explanation))
 %% Present a page with TWO Concepts on the Left and their explanatiosn on the Right
 %% Example:
-%%      \slideConceptTwo{slideConceptTwo}{Concept 1}{Explanation text}{Concept 2}{Explanation text}
-%% params: title{1}, concept_1{2}, explanation_1{3}, concept_2{4}, explanation_2{5}
-\newcommand{\slideConceptTwo}[5]{ 
-    \begin{frame}[plain]
-    \elementTitle{#1}
-    \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1]{fau-shade}
-    \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
-    \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1]{\textbf{#2}}
-    \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#3} 
+%%      \slideConceptTwo[title=slideConceptTwo, font=big, color=true, one=72\%, two=25\%]{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
+%% params: conceptParams{1}, explain_1{2}, explain_2{3}
+\newcommand{\slideConceptTwo}[3][]{ 
+    \pgfkeys{/conceptParams/.cd, #1}
+    \edef\myFont{\pgfkeysvalueof{/conceptParams/font}}%
+    \edef\myColor{\pgfkeysvalueof{/conceptParams/color}}%
 
-    \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1]{\textbf{#4}}
-    \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#5}
+    \begin{frame}[plain]
+    \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
+
+    \ifthenelse{\boolean{\myColor}{}}{
+        \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1]{fau-shade}
+        \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+    }{}
+
+    \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/one}}
+    \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/two}}
+
+    \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
+    \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#3}
     \elementBanner
     \end{frame}
 }
 
+
 %% @template Concepts Three (Title + 3x (Concept + Explanation))
 %% Present a page with THREE Concepts on the Left and their explanatiosn on the Right
 %% Example:
-%%      \slideConceptThree{slideConceptThree}{Concept 1}{Explanation text}{Concept 2}{Explanation text}{Concept 3}{Explanation text}
-%% params: title{1}, concept_1{2}, explanation_1{3}, concept_2{4}, explanation_2{5}, concept_3{6}, explanation_3{7}
-\newcommand{\slideConceptThree}[7]{ 
-    \begin{frame}[plain]
-    \elementTitle{#1}
+%%      \slideConceptThree[title=slideConceptThree, font=larger, one=72\%, two=25\%, three=19.5\%]{Explanation 1}{Explanation 2}{Explanation 3}
+%% params: conceptParams{1}, explain_1{2}, explain_2{3}, explain_3{4}
+\newcommand{\slideConceptThree}[4][]{ 
+    \pgfkeys{/conceptParams/.cd, #1}
+    \edef\myFont{\pgfkeysvalueof{/conceptParams/font}}%
+    \edef\myColor{\pgfkeysvalueof{/conceptParams/color}}%
 
+    \begin{frame}[plain]
+    \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
+
+    \ifthenelse{\boolean{\myColor}{}}{
     \layoutColor[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1]{fau-shade}
     \layoutColor[target=body, slicesV=3, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
-    \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1]{~~\textbf{#2}}
-    \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#3}
-
-    \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=1]{\textbf{#4}}
-    \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#5}
-
     \layoutColor[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1]{fau-shade}
     \layoutColor[target=body, slicesV=3, targetV=3, slicesH=3, targetH=2, mergeH=2]{fau-shade}
-    \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1]{\textbf{#6}}
-    \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=2, mergeH=2, halign=l]{#7}
+    }{}
+
+    \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/one}}
+    \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/two}}
+    \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/three}}
+
+    \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2}
+    \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#3}
+    \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=2, mergeH=2, halign=l]{#4}
     \elementBanner
     \end{frame}
 }
@@ -692,26 +737,34 @@
 %% @template Concepts Four (Title + 4x (Concept + Explanation))
 %% Present a page with FOUR Concepts on the Left and their explanatiosn on the Right
 %% Example:
-%%      \slideConceptFour{slideConceptFour}{Concept 1}{Explanation text}{Concept 2}{Explanation text}{Concept 3}{Explanation text}
-%% params: title{1}, concept_1{2}, explanation_1{3}, concept_2{4}, explanation_2{5}, concept_3{6}, explanation_3{7}, concept_4{8}, explanation_4{9}
-\newcommand{\slideConceptFour}[9]{ 
+%%      \slideConceptFour[title=slideConceptFour, font=section, one=72, two=25, three=19.5, four=10]{Explanation 1}{Explanation 2}{Explanation 3}{Explanation 4}
+%% params: conceptParams{1}, explain_1{2}, explain_2{3}, explain_3{4}, explain_4{5}
+\newcommand{\slideConceptFour}[5][]{ 
+    \pgfkeys{/conceptParams/.cd, #1}
+    \edef\myFont{\pgfkeysvalueof{/conceptParams/font}}%
+    \edef\myColor{\pgfkeysvalueof{/conceptParams/color}}%
+
     \begin{frame}[plain]
-    \elementTitle{#1}
-    \layoutColor[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1]{fau-shade}
-    \layoutColor[target=body, slicesV=4, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
-    \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1]{\textbf{#2}}
-    \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#3} 
+    \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
 
-    \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=1]{\textbf{#4}}
-    \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#5}
+    \ifthenelse{\boolean{\myColor}{}}{
+        \layoutColor[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1]{fau-shade}
+        \layoutColor[target=body, slicesV=4, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+        \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1]{fau-shade}
+        \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+    }{}
 
-    \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1]{fau-shade}
-    \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=2, mergeH=2]{fau-shade}
-    \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1]{\textbf{#6}}
-    \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=2, mergeH=2, halign=l]{#7}
+    \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/one}}
+    \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/two}}
+    \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/three}}
+    \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/four}}
 
-    \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=1]{\textbf{#8}}
-    \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=2, mergeH=2, halign=l]{#9}
+    \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
+    \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#3}
+    \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=2, mergeH=2, halign=l]{#4}
+    \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=2, mergeH=2, halign=l]{#5}
+ 
     \elementBanner
     \end{frame}
 }
+

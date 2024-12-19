@@ -64,28 +64,30 @@
     \slideCover{Lesson 1 \\ Introductions}
 
     %% Add a few slides
-    \slideAgenda{Chapter 1 \\ Chapter 2 \\ Chapter 3}
-    \slideTeleprompt{slideTeleprompt}{\input{tests/text-1.txt}}
-    \slideDouble{slideDouble}{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
-    \slideTextImage{slideTextImage}{tests/img-1.png}{\input{tests/text-1.txt}}
-    \slideImageText{slideImageText}{tests/img-1.png}{\input{tests/text-1.txt}}
-    \slideImage{slideImage}{tests/img-1.png}
-    \slideDoubleImage{slideDoubleImage}{tests/img-1.png}{tests/img-1.png}
-    \slideBigImage{tests/img-1.png}
+    %\slideAgenda{Chapter 1 \\ Chapter 2 \\ Chapter 3}
+    %\slideTeleprompt{slideTeleprompt}{\input{tests/text-1.txt}}
+    %\slideDouble{slideDouble}{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
+    %\slideTextImage{slideTextImage}{tests/img-1.png}{\input{tests/text-1.txt}}
+    %\slideImageText{slideImageText}{tests/img-1.png}{\input{tests/text-1.txt}}
+    %\slideImage{slideImage}{tests/img-1.png}
+    %\slideDoubleImage{slideDoubleImage}{tests/img-1.png}{tests/img-1.png}
+    %\slideBigImage{tests/img-1.png}
 
     %% Explore available templates
-    \slideQuote{Some Other Templates to Explore}
-    \slideQuoteText{The centrality of interactions}{\input{tests/text-1.txt}}
-    \slideTextQuote{The centrality of interactions}{\input{tests/text-1.txt}}
-    \slideQA{Could this really work?}{A: It all depends}
-    \slideLiterature{tests/book-cover.png}{http://somewhere.com/book}{\input{tests/book-chapters.txt}}
-    \slideConcept{slideConcept}{Concept}{\input{tests/text-1.txt}}
-    \slideConceptTwo{slideConceptTwo}{Concept 1}{\input{tests/text-1.txt}}{Concept 2}{\input{tests/text-1.txt}}
-    \slideConceptThree{slideConceptThree}{Concept 1}{Explanation text}{Concept 2}{Explanation text}{Concept 3}{Explanation text}
-    \slideConceptFour{slideConceptFour}{Concept 1}{Explanation text}{Concept 2}{Explanation text}{Concept 3}{Explanation text}{Concept 4}{Explanation text}
+    %\slideQuote{Some Other Templates to Explore}
+    %\slideQuoteText{The centrality of interactions}{\input{tests/text-1.txt}}
+    %\slideTextQuote{The centrality of interactions}{\input{tests/text-1.txt}}
+    %\slideQA{Could this really work?}{A: It all depends}
+    %\slideLiterature{tests/book-cover.png}{http://somewhere.com/book}{\input{tests/book-chapters.txt}}
+
+
+    \slideConcept[title=slideConcept, font=big, one=72\%]{\input{tests/text-1.txt}}
+    \slideConceptTwo[title=slideConceptTwo, font=big, color=true, one=72\%, two=25\%]{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
+    \slideConceptThree[title=slideConceptThree, font=larger, one=72\%, two=25\%, three=19.5\%]{Explanation 1}{Explanation 2}{Explanation 3}
+    \slideConceptFour[title=slideConceptFour, font=large, one=72, two=25, three=19.5, four=10]{Explanation 1}{Explanation 2}{Explanation 3}{Explanation 4}
     
     %% Close the Slide Deck
-    \slideBackCover
+    %\slideBackCover
 \end{document}
 
 
