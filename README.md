@@ -29,12 +29,6 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 \pgfkeys{
     /params/.is family,
     /params/.cd,
-        % Logo
-        logo/.initial           = images/fau-logo.png,
-    %
-        % Banner
-        banner/.initial         = images/fau-banner.png,
-    %            
         % Author
         author/.initial         = Dr. Fernando Koch,
         author/email/.initial   = kochf@fau.edu,
@@ -43,7 +37,17 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
         % Course
         course/.initial         = Principles of Software Engineering,
         course/code/.initial    = CEN~4010,
-        course/logo/.initial    = images/course-logo.png,
+        course/logo/.initial    = logos/cen4010-logo.png,
+    %
+        % Texts
+        texts/locations/.initial   = {., ./images}, % Folder locations to look for Texts
+    %
+        % Images
+        images/locations/.initial = {., ./images, ./logos}, % Folder locations to look for Image
+    %   
+        % Debug
+        debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
+        debug/compTime/.initial = true,     %% add marker with time of compilation on Cover and BackCover
 }
 
 
@@ -52,21 +56,12 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 %% (Note: the complete set of templates can be tested through main.tex)
 %%
 \begin{document}
-     \slideCover{Lesson 1 \\ Introduction}
-     \slideAgenda{
-         \begin{itemize}
-            \item Topic 1
-            \item Topic 2
-            \item Topic 3
-         \end{itemize}
-    }
-
-    \slideTeleprompt{Topic 1}{\input{tests/text-1.txt}}
-    \slideDouble{Topic 2}{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
-    \slideTextImage{Topic 3}{tests/img-1.png}{\input{tests/text-1.txt}}
+    \slideCover{Hello World!}
+    \slideAgenda{Topic 1 \\ Topic 2}
+    \slideTeleprompt{Topic 1}{!text-1} % load text from text-1.txt located in any of the texts/locations
+    \slideTextImage{Topic 2}{img-1}{!text-1} % load text img-1.png (or other extensions) located in any of the image/locations
     \slideBackCover{}
 \end{document}
-
 
 ```
 

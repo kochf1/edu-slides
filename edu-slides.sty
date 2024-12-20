@@ -63,8 +63,8 @@
         course/logo/.initial    = ,
     %
         % Text
-        text/.initial             = {,.txt}, % File extensions to try for Text
-        text/locations/.initial   = {., ./images}, % Folder locations to look for Text
+        texts/.initial             = {,.txt}, % File extensions to try for Text
+        texts/locations/.initial   = {., ./images}, % Folder locations to look for Text
     %
         % Images
         images/.initial           = {,.png, .jpg, .gif}, % File extensions to try for Image
@@ -342,8 +342,8 @@
 %% params: layoutParams{1}, text{2}
 \newcommand{\layoutText}[2][]{
     \pgfkeys{/layoutParams/.cd, #1}%
-    \pgfkeys{/params/text/.get=\extensions}%
-    \pgfkeys{/params/text/locations/.get=\locations}%
+    \pgfkeys{/params/texts/.get=\extensions}%
+    \pgfkeys{/params/texts/locations/.get=\locations}%
 
     \resetLayoutParams
     \layoutCalculator{#1}
