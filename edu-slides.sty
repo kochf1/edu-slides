@@ -63,7 +63,7 @@
     %
         % Debug
         debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
-        debug/time/.initial = true,         %% add marker with time of compilation on Cover and BackCover
+        debug/time/.initial     = true,         %% add marker with time of compilation on Cover and BackCover
 }
 
 %%%
@@ -151,12 +151,12 @@
 %
     page/x/.initial = 0.0cm,
     page/y/.initial = 0.0cm,
-    page/width/.initial = 16.0cm,
+    page/width/.initial = 15.6cm,
     page/height/.initial = 9.0cm,
 %
     header/x/.initial = 0.4cm,
     header/y/.initial = 0.2cm,
-    header/width/.initial = 15.2cm,
+    header/width/.initial = 14.8cm,
     header/height/.initial = 1.4cm,
 %
     body/x/.initial = \pgfkeysvalueof{/anchor/header/x},
@@ -283,16 +283,16 @@
     \pgfmathsetlengthmacro{\blockHeight}{\pgfkeysvalueof{/anchor/\pgfkeysvalueof{/layoutParams/target}/height}}%
 
     % Calculate size of each block
-    \pgfmathsetlengthmacro{\blockDX}{((\blockWidth / \slicesH) - 0.4cm) - (\padL + \padR) }%
-    \pgfmathsetlengthmacro{\blockDY}{((\blockHeight / \slicesV) - 0.1cm)  - (\padT + \padB)  }%
+    \pgfmathsetlengthmacro{\blockDX}{((\blockWidth / \slicesH)) - (\padL + \padR) }%
+    \pgfmathsetlengthmacro{\blockDY}{((\blockHeight / \slicesV))  - (\padT + \padB)  }%
 
     % Calculate slice coordinates
     \pgfmathsetlengthmacro{\x}{(\blockX + (\targetH-1)*\blockDX + (\targetH-1)*0.4cm) + \padL}%
     \pgfmathsetlengthmacro{\y}{(\blockY + (\targetV-1)*\blockDY + (\targetV-1)*0.1cm) + \padT}%
 
     % Calculate slice dimensions
-    \pgfmathsetlengthmacro{\dx}{(\mergeH  * \blockDX + (\mergeH-1)*0.4cm) - \padR}%
-    \pgfmathsetlengthmacro{\dy}{(\mergeV  * \blockDY + (\mergeV-1)*0.1cm) - \padB}%
+    \pgfmathsetlengthmacro{\dx}{(\mergeH  * \blockDX) - \padR}%
+    \pgfmathsetlengthmacro{\dy}{(\mergeV  * \blockDY) - \padB}%
 
     % Load coordinates
     \pgfkeyssetvalue{/layoutParams/coordinate/x}{\x}%
@@ -729,13 +729,13 @@
     \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
 
     \IfStrEq{\myType}{text}{%
-        \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/one}}
-        \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/two}}
-        
         \ifthenelse{\boolean{\myColor}{}}{
             \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1]{fau-shade}
             \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
         }{}
+
+        \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/one}}
+        \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/two}}
     }{
         \layoutImage[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/one}}
         \layoutImage[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/two}}
