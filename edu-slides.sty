@@ -1,7 +1,9 @@
 %%
 %% Copyright 2024 Fernando Koch
 %% edu-style.sty, Latex style for Simple Education Slides.
-%% v0.1.1 Initial Release & Improvements
+%%
+%% v0.2 Improved Image and Text file handling capabilities 
+%% v0.1 Initial Release
 %
 % This work may be distributed and/or modified under the
 % conditions of the LaTeX Project Public License, either version 1.3
@@ -34,7 +36,6 @@
 \RequirePackage{datetime2}
 \RequirePackage{avant}
 
-
 %%%
 %%%  GLOBAL PARAMETERS
 %%%  This block of key-value parameters can be Copy&Paste into your document
@@ -46,10 +47,10 @@
     /params/.is family,
     /params/.cd,
         % Logo
-        logo/.initial           = images/fau-logo.png,
+        logo/.initial           = logos/fau-logo.png,
     %
         % Banner
-        banner/.initial         = images/fau-banner.png,
+        banner/.initial         = logos/fau-banner.png,
     % 
         % Author
         author/.initial         = AUTHOR,
@@ -61,9 +62,17 @@
         course/code/.initial    = ,
         course/logo/.initial    = ,
     %
+        % Text
+        text/.initial             = {,.txt}, % File extensions to try for Text
+        text/locations/.initial   = {., ./images}, % Folder locations to look for Text
+    %
+        % Images
+        images/.initial           = {,.png, .jpg, .gif}, % File extensions to try for Image
+        images/locations/.initial = {., ./images, ./logos}, % Folder locations to look for Image
+    %
         % Debug
         debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
-        debug/time/.initial     = true,         %% add marker with time of compilation on Cover and BackCover
+        debug/time/.initial     = true,     %% add marker with time of compilation on Cover and BackCover
 }
 
 %%%
@@ -111,7 +120,7 @@
         small/space/.initial = 8,
     %
         % Body
-        body/size/.initial   = 8,
+        body/size/.initial   = 9,
         body/space/.initial  = 10,
     %
         % Section
@@ -167,7 +176,7 @@
     footer/x/.initial = \pgfkeysvalueof{/anchor/header/x},
     footer/y/.initial = 8.2cm,
     footer/width/.initial = \pgfkeysvalueof{/anchor/header/width},
-    footer/height/.initial = 0.8cm,
+    footer/height/.initial = 0.7cm,
 }
 
 % Define keys and their defaults
@@ -302,67 +311,74 @@
 }
 
 
-% Define the keys
-\pgfkeys{
-    /images/extensions/.initial = {,.png, .jpg, .gif} % File extensions to try
-}
+%% @layout Output contents of files with different types, checking for extensios throughot multiple folders
+%% params: parameters{1}, type{2}, filename{3}, extensions{4}, locations{5}
+\NewDocumentCommand{\outputFile}{O{} m m m m}{%
+    \global\let\fileFound\empty 
 
-%% @layout Find graphics with diffrent extensios and on ./ and ./images folders
-%% params: layoutParams{1}, image{2}
-\NewDocumentCommand{\layoutGraphics}{O{} m}{%
-    \pgfkeys{/images/extensions/.get=\extensions}
-    \global\let\foundimage\empty 
-
-    % Iterate over the extensions and check if the file exists
-    \foreach \extension in \extensions {%
-        \IfFileExists{#2\extension}{%
-            \xdef\foundimage{#2\extension}
-            \breakforeach
-        }{%
-            \IfFileExists{./images/#2\extension}{%
-                \xdef\foundimage{./images/#2\extension}
+    % Iterate over the extensions and locations to find the file
+    \foreach \location in #5 {%
+        \foreach \extension in #4 {%
+            \edef\fname{\location/#3\extension}
+            \IfFileExists{\fname}{
+                \xdef\fileFound{\fname}
                 \breakforeach
-            }{}%
-        }%
-    }%
+            }{}
+       }
+    }
 
-    \IfStrEq{\foundimage}{}{
-        Image not found: #2% If \foundimage is empty, display error message
-    }{
-        \includegraphics[#1]{\foundimage}% If \foundimage is not empty, include the image
+    % Handle the output based on the type (image or text)
+    \IfStrEq{\fileFound}{}{%
+        File not found: #3 (as #2)
+    }{%
+        \IfStrEq{#2}{image}
+        {\includegraphics[#1]{\fileFound}}
+        {\input{\fileFound}}
     }%
-
 }
 
 
-%% @layout Container for Text Box
+%% @layout Container for Text Box; text can be loaded from a file as !filename.
 %% params: layoutParams{1}, text{2}
 \newcommand{\layoutText}[2][]{
-    \resetLayoutParams
     \pgfkeys{/layoutParams/.cd, #1}%
+    \pgfkeys{/params/text/.get=\extensions}%
+    \pgfkeys{/params/text/locations/.get=\locations}%
+
+    \resetLayoutParams
     \layoutCalculator{#1}
+    \pgfkeys{/layoutParams/color/.get=\myFontColor}%
     \pgfkeys{/font/\pgfkeysvalueof{/layoutParams/font}/size/.get=\myFontSize}%
     \pgfkeys{/font/\pgfkeysvalueof{/layoutParams/font}/space/.get=\myFontSpace}%
-    \pgfkeys{/layoutParams/color/.get=\myFontColor}%
 
-    \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont \textcolor{\myFontColor}{#2}}
+    \IfBeginWith{#2}{!}{
+        \StrGobbleLeft{#2}{1}[\textRef]
+        \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont \textcolor{\myFontColor}
+        {\outputFile[]{text}{\textRef}{\extensions}{\locations}}}
+    }
+    {
+        \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont \textcolor{\myFontColor} #2}
+    }
 }
 
 
 %% @layout Container for Image Box
 %% params: layoutParams{1}, image{2}
 \newcommand{\layoutImage}[2][]{
-    \resetLayoutParams
     \pgfkeys{/layoutParams/.cd, #1}%
+    \pgfkeys{/params/images/.get=\extensions}%
+    \pgfkeys{/params/images/locations/.get=\locations}%
+
+    \resetLayoutParams
     \layoutCalculator{#1}
     \pgfmathsetlengthmacro{\dx}{\pgfkeysvalueof{/layoutParams/coordinate/dx}}%
     \pgfmathsetlengthmacro{\dy}{\pgfkeysvalueof{/layoutParams/coordinate/dy}}%
     \pgfkeys{/layoutParams/keepaspect/.get=\keepaspect}
 
     \ifthenelse{\boolean{\keepaspect}}{
-        \def\graphicOption{\layoutGraphics[width=\dx, height=\dy, keepaspectratio]{#2}}
+        \def\graphicOption{\outputFile[width=\dx, height=\dy, keepaspectratio]{image}{#2}{\extensions}{\locations}}
     }{
-        \def\graphicOption{\layoutGraphics[width=\dx, height=\dy]{#2}}
+        \def\graphicOption{\outputFile[width=\dx, height=\dy]{image}{#2}{\extensions}{\locations}}
     }
     \layoutCreator{#1}{\graphicOption}
 }
@@ -459,7 +475,7 @@
 
         %% Author information
         \ifthenelse{\equal{\author}{}}{}
-            {\layoutText[target=body, slicesH=2, slicesV=3, targetV=3, halign=l, valign=b]{\textbf{\author} \\ \email \\ \link}}
+            {\layoutText[target=body, slicesH=2, slicesV=3, targetV=3, halign=l, valign=b]{\author \\ \email \\ \link}}
         
         %% Compilation time
         \elementCompilationTime{l}
@@ -658,12 +674,12 @@
 %% Example:
 %%      \slideLiterature{tests/book-cover.png}{http://somewhere.com/book}{\input{tests/book-chapters.txt}}
 %% params: image{1},  link{2}, text{3},
-\newcommand{\slideLiterature}[3]{ 
+\newcommand{\slideLiterature}[4]{ 
     \begin{frame}[plain]
-    \layoutImage[target=page, slicesH=2, targetH=1, halign=l]{#1} %% Book Cover on the Left
-    \layoutText[target=page, slicesH=2, targetH=2, valign=t, padT=0.4cm, font=body]{#3} %% Book description on the Right
-    \layoutText[target=footer, slicesH=2, targetH=2, font=small]{#2} %% Link at the bottom    
-    
+    \layoutImage[target=page, slicesH=2, targetH=1, halign=l]{#1} 
+    \layoutText[target=footer, slicesH=2, targetH=2, font=small]{#2} 
+    \layoutText[target=header, slicesH=2, targetH=2, halign=l, font=title]{#3} 
+    \layoutText[target=body, slicesH=2, targetH=2, valign=t, padT=0.4cm, valign=t, font=body]{#4} 
     \end{frame}
 }
 
@@ -693,20 +709,22 @@
 %% params: conceptParams{1}, explain_1{2}
 \newcommand{\slideConcept}[2][]{ 
     \pgfkeys{/conceptParams/.cd, #1}
+    \pgfkeys{/conceptParams/title/.get=\myTitle}%
+    \pgfkeys{/conceptParams/one/.get=\myOne}%
     \pgfkeys{/conceptParams/type/.get=\myType}%
     \pgfkeys{/conceptParams/font/.get=\myFont}%
     \pgfkeys{/conceptParams/color/.get=\myColor}%
 
     \begin{frame}[plain]
-    \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
+    \elementTitle{\myTitle}
 
     \IfStrEq{\myType}{text}{%
         \ifthenelse{\boolean{\myColor}{}}{
             \layoutColor[target=body, slicesH=3, targetH=1]{fau-shade}
         }{}
-        \layoutText[target=body, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/one}} 
+        \layoutText[target=body, slicesH=3, targetH=1, font=\myFont]{\myOne} 
     }{
-        \layoutImage[target=body, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/one}}
+        \layoutImage[target=body, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
     }
     
     \layoutText[target=body, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
@@ -721,12 +739,15 @@
 %% params: conceptParams{1}, explain_1{2}, explain_2{3}
 \newcommand{\slideConceptTwo}[3][]{ 
     \pgfkeys{/conceptParams/.cd, #1}
+    \pgfkeys{/conceptParams/title/.get=\myTitle}%
+    \pgfkeys{/conceptParams/one/.get=\myOne}%
+    \pgfkeys{/conceptParams/two/.get=\myTwo}%
     \pgfkeys{/conceptParams/type/.get=\myType}%
     \pgfkeys{/conceptParams/font/.get=\myFont}%
     \pgfkeys{/conceptParams/color/.get=\myColor}%
 
     \begin{frame}[plain]
-    \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
+    \elementTitle{\myTitle}
 
     \IfStrEq{\myType}{text}{%
         \ifthenelse{\boolean{\myColor}{}}{
@@ -734,11 +755,11 @@
             \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
         }{}
 
-        \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/one}}
-        \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/two}}
+        \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, font=\myFont]{\myOne}
+        \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, font=\myFont]{\myTwo}
     }{
-        \layoutImage[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/one}}
-        \layoutImage[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/two}}
+        \layoutImage[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
+        \layoutImage[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myTwo}
     }
 
     \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
@@ -755,12 +776,16 @@
 %% params: conceptParams{1}, explain_1{2}, explain_2{3}, explain_3{4}
 \newcommand{\slideConceptThree}[4][]{ 
     \pgfkeys{/conceptParams/.cd, #1}
+    \pgfkeys{/conceptParams/title/.get=\myTitle}%
+    \pgfkeys{/conceptParams/one/.get=\myOne}%
+    \pgfkeys{/conceptParams/two/.get=\myTwo}%
+    \pgfkeys{/conceptParams/three/.get=\myThree}%
     \pgfkeys{/conceptParams/type/.get=\myType}%
     \pgfkeys{/conceptParams/font/.get=\myFont}%
     \pgfkeys{/conceptParams/color/.get=\myColor}%
 
     \begin{frame}[plain]
-    \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
+    \elementTitle{\myTitle}
 
     \IfStrEq{\myType}{text}{%
         \ifthenelse{\boolean{\myColor}{}}{
@@ -770,13 +795,13 @@
             \layoutColor[target=body, slicesV=3, targetV=3, slicesH=3, targetH=2, mergeH=2]{fau-shade}
         }{}
 
-        \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/one}}
-        \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/two}}
-        \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/three}}
+        \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1, font=\myFont]{\myOne}
+        \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=1, font=\myFont]{\myTwo}
+        \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1, font=\myFont]{\myThree}
     }{
-        \layoutImage[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/one}}
-        \layoutImage[target=body, slicesV=3, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/two}}
-        \layoutImage[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/three}}
+        \layoutImage[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
+        \layoutImage[target=body, slicesV=3, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myTwo}
+        \layoutImage[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myThree}
     }
 
     \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2}
@@ -793,12 +818,17 @@
 %% params: conceptParams{1}, explain_1{2}, explain_2{3}, explain_3{4}, explain_4{5}
 \newcommand{\slideConceptFour}[5][]{ 
     \pgfkeys{/conceptParams/.cd, #1}
+    \pgfkeys{/conceptParams/title/.get=\myTitle}%
+    \pgfkeys{/conceptParams/one/.get=\myOne}%
+    \pgfkeys{/conceptParams/two/.get=\myTwo}%
+    \pgfkeys{/conceptParams/three/.get=\myThree}%
+    \pgfkeys{/conceptParams/four/.get=\myFour}%
     \pgfkeys{/conceptParams/type/.get=\myType}%
     \pgfkeys{/conceptParams/font/.get=\myFont}%
     \pgfkeys{/conceptParams/color/.get=\myColor}%
 
     \begin{frame}[plain]
-    \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
+    \elementTitle{\myTitle}
 
     \IfStrEq{\myType}{text}{%
         \ifthenelse{\boolean{\myColor}{}}{
@@ -807,16 +837,15 @@
             \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1]{fau-shade}
             \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=2, mergeH=2]{fau-shade}
         }{}
-        
-        \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/one}}
-        \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/two}}
-        \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/three}}
-        \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=1, font=\myFont]{\pgfkeysvalueof{/conceptParams/four}}
-    }{
-        \layoutImage[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/one}}
-        \layoutImage[target=body, slicesV=4, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/two}}
-        \layoutImage[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/three}}
-        \layoutImage[target=body, slicesV=4, targetV=4, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\pgfkeysvalueof{/conceptParams/four}}
+        \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1, font=\myFont]{\myOne}
+        \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=1, font=\myFont]{\myTwo}
+        \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1, font=\myFont]{\myThree}
+        \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=1, font=\myFont]{\myFour}
+    }{%
+        \layoutImage[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
+        \layoutImage[target=body, slicesV=4, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myTwo}
+        \layoutImage[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myThree}
+        \layoutImage[target=body, slicesV=4, targetV=4, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myFour}
     }
 
     \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 

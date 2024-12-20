@@ -1,0 +1,6 @@
+For example:
+\begin{itemize}
+    \item \textbf{First Point}: A brief description of the first point.
+    \item \textbf{Second Point}: A brief description of the second point.
+    \item \textbf{Third Point}: A brief description of the third point.
+\end{itemize}

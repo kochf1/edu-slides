@@ -1,8 +1,8 @@
 ## Source: https://github.com/github/gitignore/blob/main/TeX.gitignore
 ## Generic
 .DS_Store
-.vscode
-.vscode/
+.vscode*
+.vscode/*
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

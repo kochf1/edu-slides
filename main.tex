@@ -32,12 +32,6 @@
 \pgfkeys{
     /params/.is family,
     /params/.cd,
-        % Logo
-        logo/.initial           = images/fau-logo.png,
-    %
-        % Banner
-        banner/.initial         = images/fau-banner.png,
-    %            
         % Author
         author/.initial         = Dr. Fernando Koch,
         author/email/.initial   = kochf@fau.edu,
@@ -46,7 +40,13 @@
         % Course
         course/.initial         = Principles of Software Engineering,
         course/code/.initial    = CEN~4010,
-        course/logo/.initial    = images/course-logo.png,
+        course/logo/.initial    = logos/cen4010-logo.png,
+    %
+        % Texts
+        text/locations/.initial   = {., ./images}, % Folder locations to look for Texts
+    %
+        % Images
+        images/locations/.initial = {., ./images, ./logos}, % Folder locations to look for Image
     %   
         % Debug
         debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
@@ -57,6 +57,13 @@
 %% (Step 2) Create the sequence of slides and content.
 %% You can find more Slide Templates through the Documentation on GitHub.
 %%
+\pgfkeys{/params/course/.get=\course}%
+\pgfkeys{/params/course/code/.get=\courseCode}
+\pgfkeys{/params/course/logo/.get=\courseLogo}
+\pgfkeys{/params/author/.get=\author}
+\pgfkeys{/params/author/email/.get=\email}
+\pgfkeys{/params/author/url/.get=\link}
+
 
 \begin{document}
 
@@ -65,31 +72,31 @@
 
     %% Explore Standard templates
     \slideAgenda{Chapter 1 \\ Chapter 2 \\ Chapter 3}
-    \slideTeleprompt{slideTeleprompt}{\input{tests/text-1.txt}}
-    \slideDouble{slideDouble}{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
-    \slideTextImage{slideTextImage}{tests/img-1}{\input{tests/text-1.txt}}
-    \slideImageText{slideImageText}{tests/img-1}{\input{tests/text-1.txt}}
-    \slideImage{slideImage}{tests/img-1.png}
-    \slideDoubleImage{slideDoubleImage}{tests/img-1}{tests/img-1}
-    \slideBigImage{tests/img-1}
+    \slideTeleprompt{slideTeleprompt}{!text-1}
+    \slideDouble{slideDouble}{!text-1}{!text-1}
+    \slideTextImage{slideTextImage}{img-1}{!text-1}
+    \slideImageText{slideImageText}{img-1}{!text-1.txt}
+    \slideImage{slideImage}{img-1}
+    \slideDoubleImage{slideDoubleImage}{img-1}{img-1}
+    \slideBigImage{img-1}
 
     %% Explore Quote templates
     \slideQuote{Some Other Templates to Explore}
-    \slideQuoteText{The centrality of interactions}{\input{tests/text-1.txt}}
-    \slideTextQuote{The centrality of interactions}{\input{tests/text-1.txt}}
+    \slideQuoteText{The centrality of interactions}{!text-1.txt}
+    \slideTextQuote{The centrality of interactions}{!text-1.txt}
     \slideQA{Could this really work?}{A: It all depends}
-    \slideLiterature{tests/book-cover.png}{http://somewhere.com/book}{\input{tests/book-chapters.txt}}
+    \slideLiterature{book-cover}{http://somewhere.com/book}{Title}{!book-chapters.txt}
 
     %% Explore Concept templates
     % Concepts with Text & Explanation
-    \slideConcept[title=slideConcept, font=big, one=72\%]{\input{tests/text-1.txt}}
-    \slideConceptTwo[title=slideConceptTwo, font=big, color=true, one=72\%, two=25\%]{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
+    \slideConcept[title=slideConcept, font=big, one=72\%]{!text-1}
+    \slideConceptTwo[title=slideConceptTwo, font=big, color=true, one=72\%, two=25\%]{!text-1}{!text-1.txt}
     \slideConceptThree[title=slideConceptThree, font=larger, one=72\%, two=25\%, three=19.5\%]{Explanation 1}{Explanation 2}{Explanation 3}
     \slideConceptFour[title=slideConceptFour, font=large, one=72, two=25, three=19.5, four=10]{Explanation 1}{Explanation 2}{Explanation 3}{Explanation 4}
     
     % Concepts with Image & Explanation
-    \slideConcept[title=slideConcept (image), type=image, one=fau-logo]{\input{tests/text-1.txt}}
-    \slideConceptTwo[title=slideConceptTwo (image), type=image, one=fau-logo, two=fau-logo]{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
+    \slideConcept[title=slideConcept (image), type=image, one=fau-logo]{!text-1}
+    \slideConceptTwo[title=slideConceptTwo (image), type=image, one=fau-logo, two=fau-logo]{!text-1}{!text-1}
     \slideConceptThree[title=slideConceptThree (image), type=image, one=fau-logo, two=fau-logo, three=fau-logo]{Explanation 1}{Explanation 2}{Explanation 3}
     \slideConceptFour[title=slideConceptFour (image), type=image, one=fau-logo, two=fau-logo, three=fau-logo, four=fau-logo]{Explanation 1}{Explanation 2}{Explanation 3}{Explanation 4}
 
