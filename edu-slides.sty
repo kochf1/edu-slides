@@ -399,12 +399,12 @@
 %%      \slideCover{Lesson 1 \\ Introductions}
 %% params: lesson{1}
 \newcommand{\slideCover}[1]{ 
-    \edef\course{\pgfkeysvalueof{/params/course}}
-    \edef\courseCode{\pgfkeysvalueof{/params/course/code}}
-    \edef\courseLogo{\pgfkeysvalueof{/params/course/logo}}
-    \edef\author{\pgfkeysvalueof{/params/author}}
-    \edef\email{\pgfkeysvalueof{/params/author/email}}
-    \edef\link{\pgfkeysvalueof{/params/author/url}}
+    \pgfkeys{/params/course/.get=\course}%
+    \pgfkeys{/params/course/code/.get=\courseCode}
+    \pgfkeys{/params/course/logo/.get=\courseLogo}
+    \pgfkeys{/params/author/.get=\author}
+    \pgfkeys{/params/author/email/.get=\email}
+    \pgfkeys{/params/author/url/.get=\link}
 
     \begin{frame}[plain]
         %% Logo
@@ -455,11 +455,11 @@
 %%      \slideBackCover
 %% params: none
 \newcommand{\slideBackCover}{ 
-    \edef\logo{\pgfkeysvalueof{/params/logo}}
-    \edef\course{\pgfkeysvalueof{/params/course}}
-    \edef\courseCode{\pgfkeysvalueof{/params/course/code}}
-    \edef\author{\pgfkeysvalueof{/params/author}}
-    \edef\email{\pgfkeysvalueof{/params/author/email}}
+    \pgfkeys{/params/logo/.get=\logo}
+    \pgfkeys{/params/course/.get=\course}
+    \pgfkeys{/params/course/code/.get=\courseCode}
+    \pgfkeys{/params/author/.get=\author}
+    \pgfkeys{/params/author/email/.get=\email}
 
     \begin{frame}[plain]
         %% Logo on Mid-Page
@@ -660,8 +660,8 @@
 %% params: conceptParams{1}, explain_1{2}
 \newcommand{\slideConcept}[2][]{ 
     \pgfkeys{/conceptParams/.cd, #1}
-    \edef\myFont{\pgfkeysvalueof{/conceptParams/font}}%
-    \edef\myColor{\pgfkeysvalueof{/conceptParams/color}}%
+    \pgfkeys{/conceptParams/font/.get=\myFont}%
+    \pgfkeys{/conceptParams/color/.get=\myColor}%
 
     \begin{frame}[plain]
     \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
@@ -683,8 +683,8 @@
 %% params: conceptParams{1}, explain_1{2}, explain_2{3}
 \newcommand{\slideConceptTwo}[3][]{ 
     \pgfkeys{/conceptParams/.cd, #1}
-    \edef\myFont{\pgfkeysvalueof{/conceptParams/font}}%
-    \edef\myColor{\pgfkeysvalueof{/conceptParams/color}}%
+    \pgfkeys{/conceptParams/font/.get=\myFont}%
+    \pgfkeys{/conceptParams/color/.get=\myColor}%
 
     \begin{frame}[plain]
     \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
@@ -711,8 +711,8 @@
 %% params: conceptParams{1}, explain_1{2}, explain_2{3}, explain_3{4}
 \newcommand{\slideConceptThree}[4][]{ 
     \pgfkeys{/conceptParams/.cd, #1}
-    \edef\myFont{\pgfkeysvalueof{/conceptParams/font}}%
-    \edef\myColor{\pgfkeysvalueof{/conceptParams/color}}%
+    \pgfkeys{/conceptParams/font/.get=\myFont}%
+    \pgfkeys{/conceptParams/color/.get=\myColor}%
 
     \begin{frame}[plain]
     \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
@@ -742,8 +742,8 @@
 %% params: conceptParams{1}, explain_1{2}, explain_2{3}, explain_3{4}, explain_4{5}
 \newcommand{\slideConceptFour}[5][]{ 
     \pgfkeys{/conceptParams/.cd, #1}
-    \edef\myFont{\pgfkeysvalueof{/conceptParams/font}}%
-    \edef\myColor{\pgfkeysvalueof{/conceptParams/color}}%
+    \pgfkeys{/conceptParams/font/.get=\myFont}%
+    \pgfkeys{/conceptParams/color/.get=\myColor}%
 
     \begin{frame}[plain]
     \elementTitle{\pgfkeysvalueof{/conceptParams/title}}
