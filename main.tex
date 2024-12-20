@@ -24,8 +24,7 @@
 \documentclass[aspectratio=169]{beamer}
 \usepackage{edu-slides}
 
-%%  
-
+%% 
 %%
 %% (Step 1) Adjust the Configurations
 %%
@@ -60,6 +59,7 @@
 %%
 
 \begin{document}
+
     %% Open the Slide Deck
     \slideCover{Lesson 1 \\ Introductions}
 
@@ -67,11 +67,11 @@
     \slideAgenda{Chapter 1 \\ Chapter 2 \\ Chapter 3}
     \slideTeleprompt{slideTeleprompt}{\input{tests/text-1.txt}}
     \slideDouble{slideDouble}{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
-    \slideTextImage{slideTextImage}{tests/img-1.png}{\input{tests/text-1.txt}}
-    \slideImageText{slideImageText}{tests/img-1.png}{\input{tests/text-1.txt}}
+    \slideTextImage{slideTextImage}{tests/img-1}{\input{tests/text-1.txt}}
+    \slideImageText{slideImageText}{tests/img-1}{\input{tests/text-1.txt}}
     \slideImage{slideImage}{tests/img-1.png}
-    \slideDoubleImage{slideDoubleImage}{tests/img-1.png}{tests/img-1.png}
-    \slideBigImage{tests/img-1.png}
+    \slideDoubleImage{slideDoubleImage}{tests/img-1}{tests/img-1}
+    \slideBigImage{tests/img-1}
 
     %% Explore Quote templates
     \slideQuote{Some Other Templates to Explore}
@@ -81,11 +81,18 @@
     \slideLiterature{tests/book-cover.png}{http://somewhere.com/book}{\input{tests/book-chapters.txt}}
 
     %% Explore Concept templates
+    % Concepts with Text & Explanation
     \slideConcept[title=slideConcept, font=big, one=72\%]{\input{tests/text-1.txt}}
     \slideConceptTwo[title=slideConceptTwo, font=big, color=true, one=72\%, two=25\%]{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
     \slideConceptThree[title=slideConceptThree, font=larger, one=72\%, two=25\%, three=19.5\%]{Explanation 1}{Explanation 2}{Explanation 3}
     \slideConceptFour[title=slideConceptFour, font=large, one=72, two=25, three=19.5, four=10]{Explanation 1}{Explanation 2}{Explanation 3}{Explanation 4}
     
+    % Concepts with Image & Explanation
+    \slideConcept[title=slideConcept (image), type=image, one=fau-logo]{\input{tests/text-1.txt}}
+    \slideConceptTwo[title=slideConceptTwo (image), type=image, one=fau-logo, two=fau-logo]{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
+    \slideConceptThree[title=slideConceptThree (image), type=image, one=fau-logo, two=fau-logo, three=fau-logo]{Explanation 1}{Explanation 2}{Explanation 3}
+    \slideConceptFour[title=slideConceptFour (image), type=image, one=fau-logo, two=fau-logo, three=fau-logo, four=fau-logo]{Explanation 1}{Explanation 2}{Explanation 3}{Explanation 4}
+
     %% Close the Slide Deck
     \slideBackCover
 \end{document}
