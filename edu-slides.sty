@@ -67,8 +67,9 @@
         texts/locations/.initial   = {., ./images}, % Folder locations to look for Text
     %
         % Images
-        images/.initial           = {,.png, .jpg, .gif}, % File extensions to try for Image
-        images/locations/.initial = {., ./images, ./logos}, % Folder locations to look for Image
+        images/.initial             = {,.png, .jpg, .gif}, % File extensions to try for Image
+        images/locations/.initial   = {., ./images, ./logos}, % Folder locations to look for Image
+        images/completions/.initial = {,-logo,-icon,-banner}, % Additional filenames to try out
     %
         % Debug
         debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
@@ -311,20 +312,23 @@
 }
 
 
-%% @layout Output contents of files with different types, checking for extensios throughot multiple folders
-%% params: parameters{1}, type{2}, filename{3}, extensions{4}, locations{5}
-\NewDocumentCommand{\outputFile}{O{} m m m m}{%
+%% @layout Import contents from files of different types, checking for extensios and completions throughot multiple folders
+%% params: parameters{1}, type{2}, filename{3}, extensions{4}, locations{5}, completions{6}
+\NewDocumentCommand{\importFile}{O{} m m m m}{%
     \global\let\fileFound\empty 
 
     % Iterate over the extensions and locations to find the file
-    \foreach \location in #5 {%
-        \foreach \extension in #4 {%
-            \edef\fname{\location/#3\extension}
-            \IfFileExists{\fname}{
-                \xdef\fileFound{\fname}
-                \breakforeach
-            }{}
-       }
+    \foreach \completion in #5 {%
+        \foreach \location in #5 {%
+            \foreach \extension in #4 {%
+                \edef\fname{\location/#3\completion\extension}
+                %vSearching: \fname 
+                \IfFileExists{\fname}{
+                    \xdef\fileFound{\fname}
+                    \breakforeach
+                }{}
+            }
+        }
     }
 
     % Handle the output based on the type (image or text)
@@ -354,7 +358,7 @@
     \IfBeginWith{#2}{!}{
         \StrGobbleLeft{#2}{1}[\textRef]
         \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont \textcolor{\myFontColor}
-        {\outputFile[]{text}{\textRef}{\extensions}{\locations}}}
+        {\importFile[]{text}{\textRef}{\extensions}{\locations}{,}}}
     }
     {
         \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont \textcolor{\myFontColor} #2}
@@ -368,6 +372,7 @@
     \pgfkeys{/layoutParams/.cd, #1}%
     \pgfkeys{/params/images/.get=\extensions}%
     \pgfkeys{/params/images/locations/.get=\locations}%
+    \pgfkeys{/params/images/completiuons/.get=\completions}%
 
     \resetLayoutParams
     \layoutCalculator{#1}
@@ -376,9 +381,9 @@
     \pgfkeys{/layoutParams/keepaspect/.get=\keepaspect}
 
     \ifthenelse{\boolean{\keepaspect}}{
-        \def\graphicOption{\outputFile[width=\dx, height=\dy, keepaspectratio]{image}{#2}{\extensions}{\locations}}
+        \def\graphicOption{\importFile[width=\dx, height=\dy, keepaspectratio]{image}{#2}{\extensions}{\locations}{\completions}}
     }{
-        \def\graphicOption{\outputFile[width=\dx, height=\dy]{image}{#2}{\extensions}{\locations}}
+        \def\graphicOption{\importFile[width=\dx, height=\dy]{image}{#2}{\extensions}{\locations}{\completions}}
     }
     \layoutCreator{#1}{\graphicOption}
 }
@@ -702,35 +707,6 @@
 }
 
 
-%% @template Concept (Title + 1x (Concept + Explanation))
-%% Present a page with ONE Concept on the Left and its explanation on the Right
-%% Example:
-%%      \slideConcept[title=slideConcept, font=big, one=72\%]{\input{tests/text-1.txt}}
-%% params: conceptParams{1}, explain_1{2}
-\newcommand{\slideConcept}[2][]{ 
-    \pgfkeys{/conceptParams/.cd, #1}
-    \pgfkeys{/conceptParams/title/.get=\myTitle}%
-    \pgfkeys{/conceptParams/one/.get=\myOne}%
-    \pgfkeys{/conceptParams/type/.get=\myType}%
-    \pgfkeys{/conceptParams/font/.get=\myFont}%
-    \pgfkeys{/conceptParams/color/.get=\myColor}%
-
-    \begin{frame}[plain]
-    \elementTitle{\myTitle}
-
-    \IfStrEq{\myType}{text}{%
-        \ifthenelse{\boolean{\myColor}{}}{
-            \layoutColor[target=body, slicesH=3, targetH=1]{fau-shade}
-        }{}
-        \layoutText[target=body, slicesH=3, targetH=1, font=\myFont]{\myOne} 
-    }{
-        \layoutImage[target=body, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
-    }
-    
-    \layoutText[target=body, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
-    \elementBanner
-    \end{frame}
-}
 
 %% @template Concepts Two (Title + 2x (Concept + Explanation))
 %% Present a page with TWO Concepts on the Left and their explanatiosn on the Right
