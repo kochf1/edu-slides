@@ -63,13 +63,14 @@
         course/logo/.initial    = ,
     %
         % Text
-        texts/.initial             = {,.txt}, % File extensions to try for Text
-        texts/locations/.initial   = {., ./images}, % Folder locations to look for Text
+        text/.initial             = {.tex,.txt,}, % File extensions to try for Text
+        text/locations/.initial   = {., ./texts}, % Folder locations to look for Text
+        text/completions/.initial   = {,}, % Additional filenames to try out
     %
         % Images
-        images/.initial             = {,.png, .jpg, .gif}, % File extensions to try for Image
-        images/locations/.initial   = {., ./images, ./logos}, % Folder locations to look for Image
-        images/completions/.initial = {,-logo,-icon,-banner}, % Additional filenames to try out
+        image/.initial             = {,.png, .jpg}, % File extensions to try for Image
+        image/locations/.initial   = {., ./images, ./logos}, % Folder locations to look for Image
+        image/completions/.initial = {,-logo,-icon,-info}, % Additional filenames to try out
     %
         % Debug
         debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
@@ -312,42 +313,75 @@
 }
 
 
-%% @layout Import contents from files of different types, checking for extensios and completions throughot multiple folders
-%% params: parameters{1}, type{2}, filename{3}, extensions{4}, locations{5}, completions{6}
-\NewDocumentCommand{\importFile}{O{} m m m m}{%
+%%%
+%%% UTILITIES
+%%%
+
+%% @layout Import CSV
+%% params: parameters{1},filename{3}
+\NewDocumentCommand{\inputTable}{O{} m}{%
+    \pgfplotstabletypeset[
+        col sep=semicolon, 
+        string type, 
+        every head row/.style={%
+            before row=\toprule,
+            after row=\midrule,
+        },
+            every last row/.style={
+            after row=\bottomrule
+        }, 
+        column type=P{#1}
+    ]{#2}
+}
+
+%% @layout Import contents from a File of given Type, considering Global Params $type/extensions, $type/locations, $type/completions
+%% params: parameters{1}, type{2}, filename{3}
+\NewDocumentCommand{\ImportFile}{O{} m m}{%
+    \pgfkeys{/params/debug/import/.get=\debug}
+    \pgfkeysgetvalue{/params/#2}{\extensions}
+    \pgfkeysgetvalue{/params/#2/locations}{\locations}
+    \pgfkeysgetvalue{/params/#2/completions}{\completions}
+
     \global\let\fileFound\empty 
 
     % Iterate over the extensions and locations to find the file
-    \foreach \completion in #5 {%
-        \foreach \location in #5 {%
-            \foreach \extension in #4 {%
+    \foreach \completion in \completions {%
+        \foreach \location in \locations {%
+            \foreach \extension in \extensions {%
                 \edef\fname{\location/#3\completion\extension}
-                %vSearching: \fname 
+                \IfStrEq{\debug}{true}{Scanning: \fname \\}{} 
                 \IfFileExists{\fname}{
+                    \IfStrEq{\debug}{true}{FOUND: \fname \\}{}
                     \xdef\fileFound{\fname}
-                    \breakforeach
                 }{}
+                \ifx\fileFound\empty{}\else{\breakforeach}\fi
             }
+            \ifx\fileFound\empty{}\else{\breakforeach}\fi
         }
+        \ifx\fileFound\empty{}\else{\breakforeach}\fi
     }
 
     % Handle the output based on the type (image or text)
-    \IfStrEq{\fileFound}{}{%
-        File not found: #3 (as #2)
-    }{%
+    \ifx\fileFound\empty
+        {File not found: #3 (as #2)}
+    \else{
         \IfStrEq{#2}{image}
-        {\includegraphics[#1]{\fileFound}}
-        {\input{\fileFound}}
-    }%
+            {\includegraphics[#1]{\fileFound}}
+            {\IfStrEq{#2}{table}
+                {TABLE IMPORT NOT ENABLED!} %% @TODO \inputTable[#1]{\fileFound}
+                {\input{\fileFound}}
+            } 
+    }\fi
 }
 
+%%%
+%%% SLIDE ELEMENTS
+%%%
 
 %% @layout Container for Text Box; text can be loaded from a file as !filename.
 %% params: layoutParams{1}, text{2}
 \newcommand{\layoutText}[2][]{
     \pgfkeys{/layoutParams/.cd, #1}%
-    \pgfkeys{/params/texts/.get=\extensions}%
-    \pgfkeys{/params/texts/locations/.get=\locations}%
 
     \resetLayoutParams
     \layoutCalculator{#1}
@@ -358,7 +392,7 @@
     \IfBeginWith{#2}{!}{
         \StrGobbleLeft{#2}{1}[\textRef]
         \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont \textcolor{\myFontColor}
-        {\importFile[]{text}{\textRef}{\extensions}{\locations}{,}}}
+                    {\ImportFile[]{text}{\textRef}}}
     }
     {
         \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont \textcolor{\myFontColor} #2}
@@ -370,9 +404,6 @@
 %% params: layoutParams{1}, image{2}
 \newcommand{\layoutImage}[2][]{
     \pgfkeys{/layoutParams/.cd, #1}%
-    \pgfkeys{/params/images/.get=\extensions}%
-    \pgfkeys{/params/images/locations/.get=\locations}%
-    \pgfkeys{/params/images/completiuons/.get=\completions}%
 
     \resetLayoutParams
     \layoutCalculator{#1}
@@ -381,9 +412,9 @@
     \pgfkeys{/layoutParams/keepaspect/.get=\keepaspect}
 
     \ifthenelse{\boolean{\keepaspect}}{
-        \def\graphicOption{\importFile[width=\dx, height=\dy, keepaspectratio]{image}{#2}{\extensions}{\locations}{\completions}}
+        \def\graphicOption{\ImportFile[width=\dx, height=\dy, keepaspectratio]{image}{#2}}
     }{
-        \def\graphicOption{\importFile[width=\dx, height=\dy]{image}{#2}{\extensions}{\locations}{\completions}}
+        \def\graphicOption{\ImportFile[width=\dx, height=\dy]{image}{#2}}
     }
     \layoutCreator{#1}{\graphicOption}
 }
@@ -706,7 +737,36 @@
         color/.initial  = true,
 }
 
+%% @template Concept (Title + 1x (Concept + Explanation))
+%% Present a page with ONE Concept and its explanation on the Right
+%% Example:
+%%      \slideConceptOne[title=slideConcept, font=big, one=72\%]{!text-1}}
+%% params: conceptParams{1}, explain_1{2}
+\newcommand{\slideConceptOne}[2][]{ 
+    \pgfkeys{/conceptParams/.cd, #1}
+    \pgfkeys{/conceptParams/title/.get=\myTitle}%
+    \pgfkeys{/conceptParams/one/.get=\myOne}%
+    \pgfkeys{/conceptParams/type/.get=\myType}%
+    \pgfkeys{/conceptParams/font/.get=\myFont}%
+    \pgfkeys{/conceptParams/color/.get=\myColor}%
 
+    \begin{frame}[plain]
+
+    \IfStrEq{\myType}{text}{%
+        \elementTitle{\myTitle}
+        \ifthenelse{\boolean{\myColor}{}}{
+            \layoutColor[target=body, slicesH=3, targetH=1]{fau-shade}
+        }{}
+        \layoutText[target=body, slicesH=3, targetH=1, font=\myFont]{\myOne} 
+        \layoutText[target=body, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
+        \elementBanner
+    }{
+        \layoutImage[target=page, slicesH=2, targetH=1, padR=0.3cm]{\myOne}
+        \layoutText[target=page, slicesH=2, slicesV=2, targetH=2, targetV=1, padR=0.2cm, font=large]{\myTitle} 
+        \layoutText[target=page, slicesH=2, slicesV=2, targetH=2, targetV=2, halign=l, valign=t, padR=0.2cm, font=body]{#2} 
+    }
+    \end{frame}
+}
 
 %% @template Concepts Two (Title + 2x (Concept + Explanation))
 %% Present a page with TWO Concepts on the Left and their explanatiosn on the Right

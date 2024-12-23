@@ -43,13 +43,14 @@
         course/logo/.initial    = logos/cen4010-logo.png,
     %
         % Texts
-        texts/locations/.initial   = {., ./images}, % Folder locations to look for Texts
+        text/locations/.initial   = {., ./texts}, % Folder locations to look for Texts
     %
         % Images
-        images/locations/.initial = {., ./images, ./logos}, % Folder locations to look for Image
+        image/locations/.initial = {., ./images, ./logos}, % Folder locations to look for Image
     %   
         % Debug
-        debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
+        debug/import/.initial   = false,     %% detail process of finding and importing files
+        debug/layout/.initial   = false,     %% mark positions, so you can adjust the layouts
         debug/compTime/.initial = true,     %% add marker with time of compilation on Cover and BackCover
 }
 

@@ -42,12 +42,6 @@
         course/code/.initial    = CEN~4010,
         course/logo/.initial    = logos/cen4010-logo.png,
     %
-        % Texts
-        texts/locations/.initial   = {., ./images}, % Folder locations to look for Texts
-    %
-        % Images
-        images/locations/.initial = {., ./images, ./logos}, % Folder locations to look for Image
-    %   
         % Debug
         debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
         debug/compTime/.initial = true,     %% add marker with time of compilation on Cover and BackCover
@@ -59,41 +53,37 @@
 %% source code and Documentation on GitHub.
 %%
 
-
-%% @template Concept (Title + 1x (Concept + Explanation))
-%% Present a page with ONE Concept on the Left and its explanation on the Right
+%% @template Conceptual Visualization
+%% Creates a new conptual design
 %% Example:
-%%      \slideConceptOne[title=slideConcept, font=big, one=72\%]{!text-1}}
+%%      \slideConceptual[title=slideConcept, font=big, one=72\%]{!text-1}}
 %% params: conceptParams{1}, explain_1{2}
-\newcommand{\slideConceptOne}[2][]{ 
+\newcommand{\slideConceptual}[2][]{ 
     \pgfkeys{/conceptParams/.cd, #1}
     \pgfkeys{/conceptParams/title/.get=\myTitle}%
-    \pgfkeys{/conceptParams/one/.get=\myOne}%
     \pgfkeys{/conceptParams/type/.get=\myType}%
     \pgfkeys{/conceptParams/font/.get=\myFont}%
     \pgfkeys{/conceptParams/color/.get=\myColor}%
 
     \begin{frame}[plain]
 
-    \IfStrEq{\myType}{text}{%
+    \IfStrEq{\myType}{colorful}{%
         \elementTitle{\myTitle}
-        \ifthenelse{\boolean{\myColor}{}}{
-            \layoutColor[target=body, slicesH=3, targetH=1]{fau-shade}
-        }{}
-        \layoutText[target=body, slicesH=3, targetH=1, font=\myFont]{\myOne} 
-        \layoutText[target=body, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
+        Do something here! \\
+        #2
         \elementBanner
     }{
-        \layoutImage[target=body, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
+        Do something else here! \\
+        #2
     }
     \end{frame}
 }
 
 
 %%
-%% (Step 3) Test it from the playgrond.
+%% (Step 3) Test it from the playground.
 %%
 
 \begin{document}
-    \slideConceptOne[title=slideConcept, font=big, one=72\%]{!text-1}
+    \slideConceptual[title=slideConcept, type=colorful]{Hello World!}
 \end{document}
