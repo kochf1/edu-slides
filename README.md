@@ -71,7 +71,3 @@ This is the presentation resulting from [main.tex](./main.tex) ([PDF](./main.pdf
 
 ![Animated GIF of main.pdf](logos/main.gif)
 
-## Disclaimer: 
-GPT4o has been applied for the development and documentation of this package.
-
-**Copyright 2024 Fernando Koch**
