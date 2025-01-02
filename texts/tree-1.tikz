@@ -1,0 +1,11 @@
+     \begin{tikzpicture}[level distance=15mm, sibling distance=15mm,
+            edge from parent path=
+          {(\tikzparentnode.south) .. controls +(0,-1) and +(0,1)
+                                     .. (\tikzchildnode.north)}]
+            \node {root}
+              child {node {left}}
+              child {node {right}
+                child {node {child}}
+                child {node {child}}
+              };
+    \end{tikzpicture}

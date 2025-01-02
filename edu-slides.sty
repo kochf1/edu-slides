@@ -2,6 +2,7 @@
 %% Copyright 2024 Fernando Koch
 %% edu-style.sty, Latex style for Simple Education Slides.
 %%
+%% v0.3 Add support to 'diagram', improved parameter passing, added new templates (slideDefinitions, slideProgress, slideEvolution)
 %% v0.2 Improved Image and Text file handling capabilities 
 %% v0.1 Initial Release
 %
@@ -14,9 +15,6 @@
 % version 2008 or later.
 %
 % This work has the LPPL maintenance status `maintained'.
-% The Current Maintainer of this work is Fernando Koch.
-% This work consists of the file edu-slides.sty and associted testing files.
-%
 % Documentation and Getting Started:
 %   https://github.com/kochf1/edu-slides
 %
@@ -37,6 +35,10 @@
 \RequirePackage{datetime2}
 \RequirePackage{avant}
 
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, decorations.pathreplacing, arrows.meta}
+\usetikzlibrary {graphs.standard}
+
 %%%
 %%%  GLOBAL PARAMETERS
 %%%  This block of key-value parameters can be Copy&Paste into your document
@@ -53,28 +55,28 @@
         % Banner
         banner/.initial         = logos/fau-banner.png,
     % 
-        % Author
-        author/.initial         = AUTHOR,
-        author/email/.initial   = ,
+        author/.initial         = define author name,
+        author/email/.initial   = define author email,
         author/url/.initial     = ,
     % 
         % Course
-        course/.initial         = ,
-        course/code/.initial    = ,
-        course/logo/.initial    = ,
+        course/.initial         = define course title,
+        course/code/.initial    = define course code,
+        course/logo/.initial    = ./logos/cen4010-logo.png,
     %
         % Text
-        text/.initial             = {.tex,.txt,}, % File extensions to try for Text
-        text/locations/.initial   = {., ./texts}, % Folder locations to look for Text
-        text/completions/.initial   = {,}, % Additional filenames to try out
+        text/.initial             = {.tex,.txt,.tikz}, % File extensions to try for Text
+        text/locations/.initial   = {., ./texts, ./diagrams}, % Folder locations to look for Text
+        text/completions/.initial  = {,}, % Additional filenames to try out
     %
         % Images
         image/.initial             = {,.png, .jpg}, % File extensions to try for Image
-        image/locations/.initial   = {., ./images, ./logos}, % Folder locations to look for Image
+        image/locations/.initial   = {., ./images, ./logos, ./stock}, % Folder locations to look for Image
         image/completions/.initial = {,-logo,-icon,-info}, % Additional filenames to try out
     %
         % Debug
         debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
+        debug/import/.initial   = false,     %% detail process of finding and importing files
         debug/time/.initial     = true,     %% add marker with time of compilation on Cover and BackCover
 }
 
@@ -127,6 +129,18 @@
         body/space/.initial  = 10,
     %
         % Section
+        h3/size/.initial   = 11,
+        h3/space/.initial  = 10,
+    %
+        % Section
+        h2/size/.initial   = 13,
+        h2/space/.initial  = 10,
+    %
+        % Section
+        h1/size/.initial   = 16,
+        h1/space/.initial  = 12,
+    %
+        % Section
         section/size/.initial   = 14,
         section/space/.initial  = 12,
     %
@@ -163,16 +177,16 @@
 %
     page/x/.initial = 0.0cm,
     page/y/.initial = 0.0cm,
-    page/width/.initial = 15.6cm,
+    page/width/.initial = 16.0cm,
     page/height/.initial = 9.0cm,
 %
-    header/x/.initial = 0.4cm,
-    header/y/.initial = 0.2cm,
-    header/width/.initial = 14.8cm,
-    header/height/.initial = 1.4cm,
+    header/x/.initial = 0.2cm,
+    header/y/.initial = 0.1cm,
+    header/width/.initial = 15.2cm,
+    header/height/.initial = 1.3cm,
 %
     body/x/.initial = \pgfkeysvalueof{/anchor/header/x},
-    body/y/.initial = 1.8cm,
+    body/y/.initial = 1.6cm,
     body/width/.initial = \pgfkeysvalueof{/anchor/header/width},
     body/height/.initial = 6.2cm,
 %
@@ -193,10 +207,10 @@
     targetV/.initial=1,             % Target vertical slice
     mergeH/.initial=1,              % Number of horizontal slices to merge
     mergeV/.initial=1,              % Number of vertical slices to merge,
-    padL/.initial=0.0cm,         % Padding at the left
-    padR/.initial=0.0cm,        % Padding at the right
-    padT/.initial=0.0cm,          % Padding at the top
-    padB/.initial=0.0cm,       % Padding at the bottom
+    padL/.initial=0.0cm,            % Padding at the left
+    padR/.initial=0.0cm,            % Padding at the right
+    padT/.initial=0.0cm,            % Padding at the top
+    padB/.initial=0.0cm,            % Padding at the bottom
     halign/.initial=c,              % Horizontal alignment
     valign/.initial=c,              % Vertical alignment
     font/.initial=body,             % font-style (for objects with Text)
@@ -298,9 +312,11 @@
     \pgfmathsetlengthmacro{\blockDX}{((\blockWidth / \slicesH)) - (\padL + \padR) }%
     \pgfmathsetlengthmacro{\blockDY}{((\blockHeight / \slicesV))  - (\padT + \padB)  }%
 
-    % Calculate slice coordinates
-    \pgfmathsetlengthmacro{\x}{(\blockX + (\targetH-1)*\blockDX + (\targetH-1)*0.4cm) + \padL}%
-    \pgfmathsetlengthmacro{\y}{(\blockY + (\targetV-1)*\blockDY + (\targetV-1)*0.1cm) + \padT}%
+    % Calculate slice coordinates    
+    \pgfmathsetlengthmacro{\x}{(\blockX + (\targetH-1)*\blockDX + (\targetH-1)*0.0cm) + \padL}%
+    %\pgfmathsetlengthmacro{\x}{(\blockX + (\targetH-1)*\blockDX + (\targetH-1)*0.4cm) + \padL}%
+    \pgfmathsetlengthmacro{\y}{(\blockY + (\targetV-1)*\blockDY + (\targetV-1)*0.0cm) + \padT}%
+    %\pgfmathsetlengthmacro{\y}{(\blockY + (\targetV-1)*\blockDY + (\targetV-1)*0.1cm) + \padT}%
 
     % Calculate slice dimensions
     \pgfmathsetlengthmacro{\dx}{(\mergeH  * \blockDX) - \padR}%
@@ -438,6 +454,79 @@
     
 }
 
+
+
+%%%
+%%% PARAMETERS FOR ADVANCED TEMPLATES
+%%%
+
+\pgfkeys{
+    /templateParams/.is family,
+    /templateParams/.cd,
+        title/.initial  = ,
+        title/1/.initial = ,
+        title/2/.initial = ,
+        title/3/.initial = ,
+        title/4/.initial = ,
+        title/5/.initial = ,
+        title/6/.initial = ,
+        title/7/.initial = ,
+        title/8/.initial = ,
+        text/1/.initial = ,
+        text/2/.initial = ,
+        text/3/.initial = ,
+        text/4/.initial = ,
+        text/5/.initial = ,
+        text/6/.initial = ,
+        text/7/.initial = ,
+        text/8/.initial = ,
+        image/.initial  =,
+        image/1/.initial = ,
+        image/2/.initial = ,
+        image/3/.initial = ,
+        image/4/.initial = ,
+        link/.initial   =, 
+        question/.initial   =, 
+        answer/.initial   =, 
+        arrow/.initial  = true,
+        type/.initial   = text,
+        font/.initial   = title,
+        color/.initial  = true,
+}
+
+\newcommand{\resetTemplateParams}{
+    \pgfkeyssetvalue{/templateParams/title}{}%
+    \pgfkeyssetvalue{/templateParams/title/1}{}%
+    \pgfkeyssetvalue{/templateParams/title/2}{}%
+    \pgfkeyssetvalue{/templateParams/title/3}{}%
+    \pgfkeyssetvalue{/templateParams/title/4}{}%
+    \pgfkeyssetvalue{/templateParams/title/5}{}%
+    \pgfkeyssetvalue{/templateParams/title/6}{}%
+    \pgfkeyssetvalue{/templateParams/title/7}{}%
+    \pgfkeyssetvalue{/templateParams/title/8}{}%
+    \pgfkeyssetvalue{/templateParams/text/1}{}%
+    \pgfkeyssetvalue{/templateParams/text/2}{}%
+    \pgfkeyssetvalue{/templateParams/text/3}{}%
+    \pgfkeyssetvalue{/templateParams/text/4}{}%
+    \pgfkeyssetvalue{/templateParams/text/5}{}%
+    \pgfkeyssetvalue{/templateParams/text/6}{}%
+    \pgfkeyssetvalue{/templateParams/text/7}{}%
+    \pgfkeyssetvalue{/templateParams/text/8}{}%
+    \pgfkeyssetvalue{/templateParams/image}{}%
+    \pgfkeyssetvalue{/templateParams/image/1}{}%
+    \pgfkeyssetvalue{/templateParams/image/2}{}%
+    \pgfkeyssetvalue{/templateParams/image/3}{}%
+    \pgfkeyssetvalue{/templateParams/image/4}{}%
+    \pgfkeyssetvalue{/templateParams/link}{}%
+    \pgfkeyssetvalue{/templateParams/question}{}%
+    \pgfkeyssetvalue{/templateParams/answer}{}%
+    \pgfkeyssetvalue{/templateParams/arrow}{true}%
+    \pgfkeyssetvalue{/templateParams/type}{text}%
+    \pgfkeyssetvalue{/templateParams/font}{title}%
+    \pgfkeyssetvalue{/templateParams/color}{true}%
+}
+
+
 %%%
 %%%  SLIDE ELEMENTS
 %%%
@@ -455,13 +544,15 @@
 }
 
 %% @layout Add Title to Header, Full- or Half-size (false) 
-%% params: layoutParams{1}, title{2}
-\newcommand{\elementTitle}[2][]{
-    \resetLayoutParams
-    \pgfkeys{/layoutParams/.cd, #1}%
-    \ifthenelse{\boolean{\pgfkeysvalueof{/layoutParams/half}}}
-        {\layoutText[target=header, slicesH=2, halign=l, font=title]{#2}}
-        {\layoutText[target=header, halign=l, font=title]{#2}}
+%% params:  [templateParams(type=full | half)(title)][1]
+\newcommand{\elementTitle}[1][]{
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/type/.get=\localType}%
+    \pgfkeys{/templateParams/title/.get=\localTitle}%
+
+    \ifthenelse{\equal{\localType}{half}}
+        {\layoutText[target=header, slicesH=2, halign=l, font=title]{\localTitle}}
+        {\layoutText[target=header, halign=l, font=title]{\localTitle}}
 }
 
 %% @layout Add Compilation Time marker to Footer
@@ -474,16 +565,19 @@
 
 
 %%%
-%%%  SLIDE MAKERS
-%%%  These are the user-friendly interfaces providing easy-to-use Templates
+%%%  SLIDE TEMPLATES
 %%%
+
 
 %% @template Cover
 %% Open the presentation with a title.
 %% Example:
 %%      \slideCover{Lesson 1 \\ Introductions}
-%% params: lesson{1}
-\newcommand{\slideCover}[1]{ 
+%% params:  [templateParams(title)][1]
+\newcommand{\slideCover}[1][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
     \pgfkeys{/params/course/.get=\course}%
     \pgfkeys{/params/course/code/.get=\courseCode}
     \pgfkeys{/params/course/logo/.get=\courseLogo}
@@ -508,7 +602,7 @@
              {\layoutText[target=body, slicesH=2, slicesV=3, targetV=1, halign=l, valign=t, font=body]{\courseCode \\ \course}}}
 
         %% Lesson Title
-        \layoutText[target=body, slicesH=2, slicesV=3, targetV=2, halign=l, font=title]{#1}
+        \layoutText[target=body, slicesH=2, slicesV=3, targetV=2, halign=l, font=title]{\myTitle}
 
         %% Author information
         \ifthenelse{\equal{\author}{}}{}
@@ -527,7 +621,7 @@
 %% params: agenda{1}
 \newcommand{\slideAgenda}[1]{ 
     \begin{frame}[plain]
-    \elementTitle[half=true]{Agenda} %% Title
+    \elementTitle[type=half, title=Agenda] %% Title
     \layoutColor[target=page, slicesH=2, targetH=2]{\defaultColor} %% Color Box on the Right
     \layoutText[target=body, slicesH=2, targetH=1, halign=l, valign=t]{#1} %% Text on the Left
     \elementBanner
@@ -565,25 +659,38 @@
 %% @template Teleprompt (Title + Text)
 %% Display a title and accompanying full-box text
 %% Example:
-%%      \slideTeleprompt{Title}{Body Text}
-%% params: title{1}, text{2}
-\newcommand{\slideTeleprompt}[2]{ 
+%%      \slideTeleprompt[type=diagram, title=Title]{Body Text}
+%% params:  [templateParams(title)(image)][1], text{1}
+\newcommand{\slideTeleprompt}[2][text]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/type/.get=\myType}%
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \IfStrEq{\myType}{diagram}{ \def\localH{c} \def\localV{c}}{ \def\localH{l} \def\localV{t} }
+
     \begin{frame}[plain]
-    \elementTitle{#1} %% Title
-    \layoutText[target=body, halign=l, valign=t]{#2} %% Text on Full-box
-    \elementBanner
+        \elementTitle[type=half, title=\myTitle] %% Title
+        \layoutText[target=body, halign=\localH, valign=\localV]{#2} %% Text alignment based on optional parameter
+        \elementBanner
     \end{frame}
 }
 
 %% @template Double (Title + Text + Text)
 %% Present a title with two sections of text, one on the left and one on the right
+%% When marked as Diagram, it is expecte the diagram will be the first item (left), which will be centered.
 %% Example:
-%%      \slideDouble{Title}{Left Text}{Right Text}
-%% params: title{1}, text(left){2}, text(right){3}
-\newcommand{\slideDouble}[3]{ 
+%%      \slideDouble[title=Title, image=Image]{Left Text}{Right Text}
+%% params:  [templateParams(title)(image)][1], text(left){2}, text(right){3}
+\newcommand{\slideDouble}[3][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/type/.get=\myType}%
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \IfStrEq{\myType}{diagram}{ \def\localH{c} \def\localV{c}}{ \def\localH{l} \def\localV{t} }
+
     \begin{frame}[plain]
-    \elementTitle[half=true]{#1} %% Title
-    \layoutText[target=body, slicesH=2, targetH=1, halign=l, valign=t]{#2} %% Text on the Left-box
+    \elementTitle[type=half, title=\myTitle] %% Title
+    \layoutText[target=body, slicesH=2, targetH=1, halign=\localH, valign=\localV]{#2} %% Text on the Left-box
     \layoutText[target=body, slicesH=2, targetH=2, halign=l, valign=t]{#3} %% Text on the Right-box
     \elementBanner
     \end{frame}
@@ -592,13 +699,21 @@
 %% @template TextImage (Title + Text + Image)
 %% Combine a title with text on the left and an image on the right
 %% Example:
-%%      \slideTextImage{Title}{image.png}{Right Text}
-%% params: title{1}, image{2}, text{3}
-\newcommand{\slideTextImage}[3]{ 
+%%      \slideTextImage[title=Title, image=Image]
+%% params:  [templateParams(title)(image)][1], text[2]
+\newcommand{\slideTextImage}[2][]{
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/type/.get=\myType}%
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \pgfkeys{/templateParams/image/.get=\myImage}%
+    \IfStrEq{\myType}{diagram}{ \def\localH{c} \def\localV{c}}{ \def\localH{l} \def\localV{t} }
+
+
     \begin{frame}[plain]
-    \elementTitle[half=true]{#1} %% Title
-    \layoutText[target=body, slicesH=2, targetH=1, halign=l, valign=t]{#3} %% Text on the Left-box
-    \layoutImage[target=body, slicesH=2, targetH=2]{#2} %% Image on the Right-box
+    \elementTitle[type=half, title=\myTitle] %% Title
+    \layoutText[target=body, slicesH=2, targetH=1, halign=\localH, valign=\localV]{#2} %% Text on the Left-box
+    \layoutImage[target=body, slicesH=2, targetH=2]{\myImage} %% Image on the Right-box
     \elementBanner
     \end{frame}
 }
@@ -606,13 +721,20 @@
 %% @template ImageText (Title + Image + Text)
 %% Pair a title with an image on the left and text on the right
 %% Example:
-%%      \slideImageText{Title}{image.png}{Right Text}
-%% params: title{1}, image{2}, text{3}
-\newcommand{\slideImageText}[3]{ 
+%%      \slideImageText[title=Title, image=Image]
+%% params:  [templateParams(title)(image)][1], text[2]
+\newcommand{\slideImageText}[2][]{
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/type/.get=\myType}%
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \pgfkeys{/templateParams/image/.get=\myImage}%
+    \IfStrEq{\myType}{diagram}{ \def\localH{c} \def\localV{c}}{ \def\localH{l} \def\localV{t} }
+
     \begin{frame}[plain]
-    \elementTitle[half=true]{#1} %% Title
-    \layoutText[target=body, slicesH=2, targetH=2, halign=l, valign=t]{#3} %% Text on the Left-box
-    \layoutImage[target=body, slicesH=2, targetH=1]{#2} %% Image on the Left-box
+    \elementTitle[type=half, title=\myTitle] %% Title
+    \layoutText[target=body, slicesH=2, targetH=2, halign=\localH, valign=\localV]{#2} %% Text on the Left-box
+    \layoutImage[target=body, slicesH=2, targetH=1]{\myImage} %% Image on the Left-box
     \elementBanner
     \end{frame}
 }
@@ -620,12 +742,17 @@
 %% @template Image (Title + Image)
 %% Show a title and a full-box image
 %% Example:
-%%      \slideImage{Title}{image.png}
-%% params: title{1}, image{2}
-\newcommand{\slideImage}[2]{ 
+%%      \slideImage[title=Title, image=Image]
+%% params:  [templateParams(title)(image)][1]
+\newcommand{\slideImage}[1][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \pgfkeys{/templateParams/image/.get=\myImage}%
+
     \begin{frame}[plain]
-    \elementTitle{#1} %% Title
-    \layoutImage[target=body]{#2} %% Image
+    \elementTitle[title=\myTitle] %% Title
+    \layoutImage[target=body]{\myImage} %% Image
     \elementBanner
     \end{frame}
 }
@@ -633,13 +760,19 @@
 %% @template DobleImage (Title + Image + Image)
 %% Include a title with two side-by-side images, one on the left and one on the right
 %% Example:
-%%      \slideDoubleImage{image.png}{image.png}
-%% params: title{1}, image(left){2}, image(right){2}
-\newcommand{\slideDoubleImage}[3]{ 
+%%      \slideDoubleImage[title=Title, image/1=Image, image/2=Image]
+%% params:  [templateParams(title)(image1)(image2)][1]
+\newcommand{\slideDoubleImage}[1][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \pgfkeys{/templateParams/image/1/.get=\myImageOne}%
+    \pgfkeys{/templateParams/image/2/.get=\myImageTwo}%
+
     \begin{frame}[plain]
-    \elementTitle{#1} %% Title
-    \layoutImage[target=body, slicesH=2, targetH=1]{#2}  %% Image on the Left-box
-    \layoutImage[target=body, slicesH=2, targetH=2]{#3} %% Image on the Right-box
+    \elementTitle[title=\myTitle] %% Title
+    \layoutImage[target=body, slicesH=2, targetH=1]{\myImageOne}  %% Image on the Left-box
+    \layoutImage[target=body, slicesH=2, targetH=2]{\myImageTwo} %% Image on the Right-box
     \elementBanner
     \end{frame}
 }
@@ -647,61 +780,87 @@
 %% @template BigImage (Full-Page Big Image)
 %% Display a full-page, single image on the whole page
 %% Example:
-%%      \slideBigImage{image.png}
-%% params: image{1}
-\newcommand{\slideBigImage}[1]{ 
+%%      \slideBigImage[image=Image]
+%% params:  [templateParams(image}[1]
+\newcommand{\slideBigImage}[1][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/image/.get=\myImage}%
+
     \begin{frame}[plain]
-    \layoutImage[target=page]{#1} %% Image on Full-page
+    \layoutImage[target=page]{\myImage} %% Image on Full-page
     \end{frame}
 }
 
 %% @template Quote (Full-Page Big Text)
 %% Highlight a full-page, prominent quote
 %% Example:
-%%      \slideQuote{Text}
-%% params: quote{1}
-\newcommand{\slideQuote}[1]{ 
+%%      \slideQuote[title=Quote]
+%% params:  [templateParams(title}[1]
+\newcommand{\slideQuote}[1][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+
     \begin{frame}[plain]
-    \layoutText[target=page, padL=0.4cm, padR=0.2cm, font=big]{#1} %% Quote on Full-page
+    \layoutText[target=page, padL=0.4cm, padR=0.2cm, font=big]{\myTitle} 
     \end{frame}
 }
 
 %% @template QuoteText (Quote (left) + Text)
 %% Pair a larger quote on the left with accompanying text on the right
+%% Type=diagram will force centering the diagram in the Text box.
 %% Example:
-%%      \slideQuoteText{Quote}{Text}
-%% params: quote{1}, text{2}
-\newcommand{\slideQuoteText}[2]{ 
+%%      \slideQuoteText[type=diagram, title=Quote]{Text}
+%% params: [templateParams(type={text | diagram}, title}[1] text{2}
+\newcommand{\slideQuoteText}[2][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/type/.get=\myType}%
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \IfStrEq{\myType}{diagram}{ \def\localH{c}}{ \def\localH{l}}
+
     \begin{frame}[plain]
-    \layoutText[target=page, slicesH=2, targetH=1, halign=r, valign=c, padL=0.2cm, font=larger]{#1} %% Text on the Left-box
-    \layoutText[target=page, slicesH=2, targetH=2, halign=l, valign=c, font=body]{#2} %% Text on the Right-box
+    \layoutText[target=page, slicesH=2, targetH=1, halign=r, valign=c, padL=0.2cm, padR=0.2cm, font=larger]{\myTitle} %% Large Text on the Left-box
+    \layoutText[target=page, slicesH=2, targetH=2, halign=\localH, font=body]{#2} %% Text on the Right-box
     \elementBanner
     \end{frame}
 }
 
 %% @template TextQuote (Text + Quote (right))
-%% Pair a a text on the left with a larger quote on the right
+%% Pair a a text on the left with a larger quote on the right.
+%% Type=diagram will force centering the diagram in the Text box.
 %% Example:
-%%      \slideQuote{Quote}{Text}
-%% params: quote{1}, text{2}
-\newcommand{\slideTextQuote}[2]{ 
+%%      \slideTextQuote[type=diagram, title=Quote]{Text}
+%% params: [templateParams(type={text | diagram}, title}[1] text{2}
+\newcommand{\slideTextQuote}[2][]{
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/type/.get=\myType}%
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \IfStrEq{\myType}{diagram}{ \def\localH{c}}{ \def\localH{l}}
+
     \begin{frame}[plain]
-    \layoutText[target=page, slicesH=2, targetH=2, halign=l, padR=0.2cm, font=larger]{#1} %% Text on the Right-box
-    \layoutText[target=page, slicesH=2, targetH=1, halign=l, padL=0.2cm, font=body]{#2} %% Text on the Left-box
+    \layoutText[target=page, slicesH=2, targetH=2, halign=l, padL=0.2cm, font=larger]{\myTitle}
+    \layoutText[target=page, slicesH=2, targetH=1, halign=\localH, padR=0.2cm, font=body]{#2}
     \elementBanner
     \end{frame}
-}
-
+    }
 
 %% @template QA (Quote (Top) + Text)
 %% Present a larger quote on top with supporting text at the bottom
 %% Example:
-%%      \slideQA{Could this really work?}{A: It all depends}
-%% params: quote{1}, text{2}
-\newcommand{\slideQA}[2]{ 
+%%      \slideQA[question=Could this really work?, answer=A: It all depends}
+%% params: [templateParams(question, answer}[1]
+\newcommand{\slideQA}[1][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/question/.get=\myQuestion}%
+    \pgfkeys{/templateParams/answer/.get=\myAnswer}%
+
     \begin{frame}[plain]
-    \layoutText[target=page, slicesV=2, targetV=1, font=larger]{#1} %% Text on the Right-box
-    \layoutText[target=page, slicesV=2, targetV=2, font=title]{#2}
+    \layoutText[target=page, slicesV=2, targetV=1, font=larger]{\myQuestion} %% Text on the Right-box
+    \layoutText[target=page, slicesV=2, targetV=2, font=title]{\myAnswer}
     \elementBanner
     \end{frame}
 }
@@ -709,188 +868,149 @@
 %% @template Literature (Big Image (left) + Text + Link)
 %% Showcase a larger image on the left, text on the top-right, and a link in the bottom-right
 %% Example:
-%%      \slideLiterature{tests/book-cover.png}{http://somewhere.com/book}{\input{tests/book-chapters.txt}}
-%% params: image{1},  link{2}, text{3},
-\newcommand{\slideLiterature}[4]{ 
+%%      \slideLiterature[title=Title, image=book-cover, link=http://somewhere.com/book]{book-chapters}
+%% params: [templateParams(image, link, title}[1], text{2}
+\newcommand{\slideLiterature}[2][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/image/.get=\myImage}%
+    \pgfkeys{/templateParams/link/.get=\myLink}%
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+
     \begin{frame}[plain]
-    \layoutImage[target=page, slicesH=2, targetH=1, halign=l]{#1} 
-    \layoutText[target=footer, slicesH=2, targetH=2, font=small]{#2} 
-    \layoutText[target=header, slicesH=2, targetH=2, halign=l, font=title]{#3} 
-    \layoutText[target=body, slicesH=2, targetH=2, valign=t, padT=0.4cm, valign=t, font=body]{#4} 
+    \layoutImage[target=page, slicesH=2, targetH=1, halign=l]{\myImage} 
+    \layoutText[target=footer, slicesH=2, targetH=2, font=small]{\myLink} 
+    \layoutText[target=header, slicesH=2, targetH=2, halign=l, font=h2]{\myTitle} 
+    \layoutText[target=body, slicesH=2, targetH=2, valign=t, padT=0.4cm, valign=t, font=body]{#2} 
     \end{frame}
 }
 
 
-%%%
-%%% CONCEPT PRESENTATION 
-%%%
 
-\pgfkeys{
-    /conceptParams/.is family,
-    /conceptParams/.cd,
-        type/.initial   = text,
-        title/.initial  = a,
-        one/.initial    = a,
-        two/.initial    = a,
-        three/.initial  = a,
-        four/.initial   = a,
-        font/.initial   = body,
-        color/.initial  = true,
-}
-
-%% @template Concept (Title + 1x (Concept + Explanation))
-%% Present a page with ONE Concept and its explanation on the Right
+%% @template Template for Definitions (dimensions 2 to 8)
 %% Example:
-%%      \slideConceptOne[title=slideConcept, font=big, one=72\%]{!text-1}}
-%% params: conceptParams{1}, explain_1{2}
-\newcommand{\slideConceptOne}[2][]{ 
-    \pgfkeys{/conceptParams/.cd, #1}
-    \pgfkeys{/conceptParams/title/.get=\myTitle}%
-    \pgfkeys{/conceptParams/one/.get=\myOne}%
-    \pgfkeys{/conceptParams/type/.get=\myType}%
-    \pgfkeys{/conceptParams/font/.get=\myFont}%
-    \pgfkeys{/conceptParams/color/.get=\myColor}%
+%%      \slideDefinitions[type=text, title=Title, title/1=Title1, ..., title/N=TitleN, text/1=!text-1, ..., text/n=!text-n]
+%% params: templateParams{1}
+\newcommand{\slideDefinitions}[1][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \pgfkeys{/templateParams/type/.get=\myType}%
+    \pgfkeys{/templateParams/color/.get=\myColor}%
+    \pgfkeys{/templateParams/font/.get=\myFont}%
+    \global\let\partCount\empty
+
+    \foreach \x in {1,2,3,4,5,6,7,8}{%
+        \pgfkeys{/templateParams/title/\x/.get=\thisTitle}
+        \ifx\thisTitle\empty{\breakforeach}\else{\xdef\partCount{\x}}\fi
+    }
 
     \begin{frame}[plain]
+        \elementTitle[title=\myTitle]
 
-    \IfStrEq{\myType}{text}{%
-        \elementTitle{\myTitle}
-        \ifthenelse{\boolean{\myColor}{}}{
-            \layoutColor[target=body, slicesH=3, targetH=1]{fau-shade}
+        \foreach \i in {1,...,\partCount}{
+            \pgfkeys{/templateParams/title/\i/.get=\localTitle}%
+            \pgfkeys{/templateParams/text/\i/.get=\localText}%
+            \IfStrEq{\myType}{text}{%
+                \ifthenelse{\boolean{\myColor}{}}{
+                    \ifodd\i
+                        \layoutColor[target=body, slicesV=\partCount, targetV=\i, slicesH=3, targetH=1]{fau-shade}
+                        \layoutColor[target=body, slicesV=\partCount, targetV=\i, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+                    \fi
+                }{}
+                \layoutText[target=body, slicesV=\partCount, targetV=\i, slicesH=3, targetH=1, font=\myFont]{\localTitle}
+            }{
+                \layoutImage[target=body, slicesV=\partCount, targetV=\i, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\localTitle}
+            }
+            \layoutText[target=body, slicesV=\partCount, targetV=\i, slicesH=3, targetH=2, mergeH=2, halign=l]{\localText} 
+        }    
+        
+        \ifnum\partCount<5 \elementBanner \fi
+        \end{frame}
+}
+
+
+%% @template Template for Progress (dimensions 2 to 8)
+%% Example:
+%%      \slideProgress[type=text, title=Title, title/1=Title1, ..., title/N=TitleN, text/1=!text-1, ..., text/n=!text-n]
+%% params: templateParams{1}
+\newcommand{\slideProgress}[1][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \pgfkeys{/templateParams/type/.get=\myType}%
+    \pgfkeys{/templateParams/color/.get=\myColor}%
+    \pgfkeys{/templateParams/font/.get=\myFont}%
+    \pgfkeys{/templateParams/arrow/.get=\myArrow}%
+    \global\let\partCount\empty
+
+    \foreach \x in {1,2,3,4,5,6,7,8}{%
+        \pgfkeys{/templateParams/title/\x/.get=\thisTitle}
+        \ifx\thisTitle\empty{\breakforeach}\else{\xdef\partCount{\x}}\fi
+    }
+
+    \begin{frame}[plain]
+        \elementTitle[title=\myTitle]
+
+        \ifthenelse{\boolean{\myArrow}}{
+            \layoutImage[target=body, slicesV=5, targetV=1, padL=0.6cm, keepaspect=false]{arrow-right}
         }{}
-        \layoutText[target=body, slicesH=3, targetH=1, font=\myFont]{\myOne} 
-        \layoutText[target=body, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
+
+        \foreach \i in {1,...,\partCount}{
+            \pgfkeys{/templateParams/title/\i/.get=\localTitle}%
+            \pgfkeys{/templateParams/text/\i/.get=\localText}%
+            \IfStrEq{\myType}{text}{%
+                \layoutText[target=body, slicesV=5, targetV=2, slicesH=\partCount, targetH=\i, font=\myFont]{\localTitle}
+            }{
+                \layoutImage[target=body, slicesV=5, targetV=2, slicesH=\partCount, targetH=\i, font=\myFont]{\localTitle}
+            }
+            \layoutText[target=body, slicesV=5, targetV=3, mergeV=3, slicesH=\partCount, targetH=\i, valign=t]{\localText}
+            %\layoutText[target=body, slicesV=\partCount, targetV=\i, slicesH=3, targetH=2, mergeH=2, halign=l]{\localText} 
+        }    
+        
+   
         \elementBanner
-    }{
-        \layoutImage[target=page, slicesH=2, targetH=1, padR=0.3cm]{\myOne}
-        \layoutText[target=page, slicesH=2, slicesV=2, targetH=2, targetV=1, padR=0.2cm, font=large]{\myTitle} 
-        \layoutText[target=page, slicesH=2, slicesV=2, targetH=2, targetV=2, halign=l, valign=t, padR=0.2cm, font=body]{#2} 
-    }
-    \end{frame}
+        \end{frame}
 }
 
-%% @template Concepts Two (Title + 2x (Concept + Explanation))
-%% Present a page with TWO Concepts on the Left and their explanatiosn on the Right
+
+%% @template Template for Evolution (dimensions 2 to 5)
 %% Example:
-%%      \slideConceptTwo[title=slideConceptTwo, font=big, color=true, one=72\%, two=25\%]{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
-%% params: conceptParams{1}, explain_1{2}, explain_2{3}
-\newcommand{\slideConceptTwo}[3][]{ 
-    \pgfkeys{/conceptParams/.cd, #1}
-    \pgfkeys{/conceptParams/title/.get=\myTitle}%
-    \pgfkeys{/conceptParams/one/.get=\myOne}%
-    \pgfkeys{/conceptParams/two/.get=\myTwo}%
-    \pgfkeys{/conceptParams/type/.get=\myType}%
-    \pgfkeys{/conceptParams/font/.get=\myFont}%
-    \pgfkeys{/conceptParams/color/.get=\myColor}%
+%%      \slideEvolution[type=text, title=Title, title/1=Title1, ..., title/N=TitleN, text/1=!text-1, ..., text/n=!text-n]
+%% params: templateParams{1}
+\newcommand{\slideEvolution}[1][]{ 
+    \resetTemplateParams
+    \pgfkeys{/templateParams/.cd, #1}
+    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \pgfkeys{/templateParams/type/.get=\myType}%
+    \pgfkeys{/templateParams/color/.get=\myColor}%
+    \pgfkeys{/templateParams/font/.get=\myFont}%
+    \pgfkeys{/templateParams/arrow/.get=\myArrow}%
+    \global\let\partCount\empty
+
+    \foreach \x in {1,2,3,4,5}{%
+        \pgfkeys{/templateParams/title/\x/.get=\thisTitle}
+        \ifx\thisTitle\empty{\breakforeach}\else{\xdef\partCount{\x}}\fi
+    }
 
     \begin{frame}[plain]
-    \elementTitle{\myTitle}
+        \elementTitle[title=\myTitle]
 
-    \IfStrEq{\myType}{text}{%
-        \ifthenelse{\boolean{\myColor}{}}{
-            \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1]{fau-shade}
-            \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
-        }{}
+        \foreach \i in {1,...,\partCount}{
+            \pgfkeys{/templateParams/title/\i/.get=\localTitle}%
+            \pgfkeys{/templateParams/text/\i/.get=\localText}%
+            \pgfmathsetmacro{\localV}{5 - \i}
+            \pgfmathsetmacro{\localVT}{7 - \i}
 
-        \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, font=\myFont]{\myOne}
-        \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, font=\myFont]{\myTwo}
-    }{
-        \layoutImage[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
-        \layoutImage[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myTwo}
-    }
-
-    \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
-    \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#3}
-    \elementBanner
-    \end{frame}
+            \IfStrEq{\myType}{text}{%
+                \layoutText[target=body, slicesV=6, targetV=\localV, slicesH=\partCount, targetH=\i, font=\myFont]{\localTitle}
+            }{
+                \layoutImage[target=body, slicesV=6, targetV=\localV, slicesH=\partCount, targetH=\i, font=\myFont]{\localTitle}
+            }
+            \layoutText[target=body, slicesV=6, targetV=\localVT, mergeV=\i, slicesH=\partCount, targetH=\i, valign=t]{\localText}
+        }    
+        
+   
+        \elementBanner
+        \end{frame}
 }
-
-
-%% @template Concepts Three (Title + 3x (Concept + Explanation))
-%% Present a page with THREE Concepts on the Left and their explanatiosn on the Right
-%% Example:
-%%      \slideConceptThree[title=slideConceptThree, font=larger, one=72\%, two=25\%, three=19.5\%]{Explanation 1}{Explanation 2}{Explanation 3}
-%% params: conceptParams{1}, explain_1{2}, explain_2{3}, explain_3{4}
-\newcommand{\slideConceptThree}[4][]{ 
-    \pgfkeys{/conceptParams/.cd, #1}
-    \pgfkeys{/conceptParams/title/.get=\myTitle}%
-    \pgfkeys{/conceptParams/one/.get=\myOne}%
-    \pgfkeys{/conceptParams/two/.get=\myTwo}%
-    \pgfkeys{/conceptParams/three/.get=\myThree}%
-    \pgfkeys{/conceptParams/type/.get=\myType}%
-    \pgfkeys{/conceptParams/font/.get=\myFont}%
-    \pgfkeys{/conceptParams/color/.get=\myColor}%
-
-    \begin{frame}[plain]
-    \elementTitle{\myTitle}
-
-    \IfStrEq{\myType}{text}{%
-        \ifthenelse{\boolean{\myColor}{}}{
-            \layoutColor[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1]{fau-shade}
-            \layoutColor[target=body, slicesV=3, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
-            \layoutColor[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1]{fau-shade}
-            \layoutColor[target=body, slicesV=3, targetV=3, slicesH=3, targetH=2, mergeH=2]{fau-shade}
-        }{}
-
-        \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1, font=\myFont]{\myOne}
-        \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=1, font=\myFont]{\myTwo}
-        \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1, font=\myFont]{\myThree}
-    }{
-        \layoutImage[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
-        \layoutImage[target=body, slicesV=3, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myTwo}
-        \layoutImage[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myThree}
-    }
-
-    \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2}
-    \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#3}
-    \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=2, mergeH=2, halign=l]{#4}
-    \elementBanner
-    \end{frame}
-}
-
-%% @template Concepts Four (Title + 4x (Concept + Explanation))
-%% Present a page with FOUR Concepts on the Left and their explanatiosn on the Right
-%% Example:
-%%      \slideConceptFour[title=slideConceptFour, font=section, one=72, two=25, three=19.5, four=10]{Explanation 1}{Explanation 2}{Explanation 3}{Explanation 4}
-%% params: conceptParams{1}, explain_1{2}, explain_2{3}, explain_3{4}, explain_4{5}
-\newcommand{\slideConceptFour}[5][]{ 
-    \pgfkeys{/conceptParams/.cd, #1}
-    \pgfkeys{/conceptParams/title/.get=\myTitle}%
-    \pgfkeys{/conceptParams/one/.get=\myOne}%
-    \pgfkeys{/conceptParams/two/.get=\myTwo}%
-    \pgfkeys{/conceptParams/three/.get=\myThree}%
-    \pgfkeys{/conceptParams/four/.get=\myFour}%
-    \pgfkeys{/conceptParams/type/.get=\myType}%
-    \pgfkeys{/conceptParams/font/.get=\myFont}%
-    \pgfkeys{/conceptParams/color/.get=\myColor}%
-
-    \begin{frame}[plain]
-    \elementTitle{\myTitle}
-
-    \IfStrEq{\myType}{text}{%
-        \ifthenelse{\boolean{\myColor}{}}{
-            \layoutColor[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1]{fau-shade}
-            \layoutColor[target=body, slicesV=4, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
-            \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1]{fau-shade}
-            \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=2, mergeH=2]{fau-shade}
-        }{}
-        \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1, font=\myFont]{\myOne}
-        \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=1, font=\myFont]{\myTwo}
-        \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1, font=\myFont]{\myThree}
-        \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=1, font=\myFont]{\myFour}
-    }{%
-        \layoutImage[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
-        \layoutImage[target=body, slicesV=4, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myTwo}
-        \layoutImage[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myThree}
-        \layoutImage[target=body, slicesV=4, targetV=4, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myFour}
-    }
-
-    \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
-    \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#3}
-    \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=2, mergeH=2, halign=l]{#4}
-    \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=2, mergeH=2, halign=l]{#5}
- 
-    \elementBanner
-    \end{frame}
-}
-

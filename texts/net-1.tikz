@@ -1,0 +1,11 @@
+
+
+\tikz [x=8mm, y=6mm, circle]
+  \graph [nodes={fill=blue!70}, empty nodes, n=8] {
+    subgraph I_n [name=A] --[butterfly={level=4}]
+    subgraph I_n [name=B] --[butterfly={level=2}]
+    subgraph I_n [name=C] --[butterfly]
+    subgraph I_n [name=D] --
+    subgraph I_n [name=E]
+  };
+  

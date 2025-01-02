@@ -40,13 +40,14 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
         course/logo/.initial    = logos/cen4010-logo.png,
     %
         % Texts
-        texts/locations/.initial   = {., ./images}, % Folder locations to look for Texts
+        text/locations/.initial   = {., ./texts}, % Folder locations to look for Texts
     %
         % Images
-        images/locations/.initial = {., ./images, ./logos}, % Folder locations to look for Image
+        image/locations/.initial = {., ./images, ./logos}, % Folder locations to look for Image
     %   
         % Debug
-        debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
+        debug/import/.initial   = false,     %% detail process of finding and importing files
+        debug/layout/.initial   = false,     %% mark positions, so you can adjust the layouts
         debug/compTime/.initial = true,     %% add marker with time of compilation on Cover and BackCover
 }
 
@@ -56,18 +57,26 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 %% (Note: the complete set of templates can be tested through main.tex)
 %%
 \begin{document}
-    \slideCover{Hello World!}
+    % Open slide deck
+    \slideCover[title=Hello World!]
+
+    % Agenda template with topics
     \slideAgenda{Topic 1 \\ Topic 2}
-    \slideTeleprompt{Topic 1}{!text-1} % load text from text-1.txt located in any of the texts/locations
-    \slideTextImage{Topic 2}{img-1}{!text-1} % load text img-1.png (or other extensions) located in any of the image/locations
-    \slideBackCover{}
+
+    % load text from text-1 from possible text locations
+    \slideTeleprompt[title=Topic 1]{!text-1} 
+
+    % load img-1.png (or other extensions) and TIKz diagram tree-1 from possible image and text locations
+    \slideTextImage[type=diagram,title=Topic 2, image=img-1]{!tree-1} 
+
+    % Closing slide
+    \slideBackCover
 \end{document}
 
 ```
 
-## Example:
+## Examples:
 
-This is the presentation resulting from [main.tex](./main.tex) ([PDF](./main.pdf) attached)
+* Getting Started: [main.tex](./main.tex) ([PDF](./main.pdf) attached)
 
-![Animated GIF of main.pdf](logos/main.gif)
 

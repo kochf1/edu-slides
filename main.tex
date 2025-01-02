@@ -11,9 +11,6 @@
 % version 2008 or later.
 %
 % This work has the LPPL maintenance status `maintained'.
-% The Current Maintainer of this work is Fernando Koch.
-% This work consists of the file edu-slides.sty and associted testing files.
-%
 % Documentation and Getting Started:
 %   https://github.com/kochf1/edu-slides
 %
@@ -42,17 +39,11 @@
         course/.initial         = Principles of Software Engineering,
         course/code/.initial    = CEN~4010,
         course/logo/.initial    = logos/cen4010-logo.png,
-    %
-        % Texts
-        text/locations/.initial   = {., ./texts}, % Folder locations to look for Texts
-    %
-        % Images
-        image/locations/.initial = {., ./images, ./logos}, % Folder locations to look for Image
     %   
         % Debug
         debug/import/.initial   = false,     %% detail process of finding and importing files
         debug/layout/.initial   = false,     %% mark positions, so you can adjust the layouts
-        debug/compTime/.initial = true,     %% add marker with time of compilation on Cover and BackCover
+        debug/time/.initial     = true,      %% add marker with time of compilation on Cover and BackCover
 }
 
 %%
@@ -63,39 +54,66 @@
 \begin{document}
 
     %% Open the Slide Deck
-    \slideCover{Lesson 1 \\ Introductions}
+    \slideCover[title=Lesson 1 \\ Introductions]
 
-    %% Explore Standard templates
+    %%    
+    %% STANDARD templates
+
     \slideAgenda{Chapter 1 \\ Chapter 2 \\ Chapter 3}
-    \slideTeleprompt{slideTeleprompt}{!text-1}
-    \slideDouble{slideDouble}{!text-1}{!text-1}
-    \slideTextImage{slideTextImage}{img-1}{!text-1}
-    \slideImageText{slideImageText}{img-1}{!text-1}
-    \slideImage{slideImage}{img-1}
-    \slideDoubleImage{slideDoubleImage}{img-1}{img-1}
-    \slideBigImage{img-1}
+    \slideTeleprompt[type=diagram, title=slideTeleprompt]{!function-1}
+    \slideDouble[title=slideDouble]{!text-1}{!text-1}
+    \slideDouble[type=diagram, title=slideDouble]{!tree-1}{!text-1}
 
-    %% Explore Quote templates
-    \slideQuote{Some Other Templates to Explore}
-    \slideQuoteText{The centrality of interactions}{!text-1}
-    \slideTextQuote{The centrality of interactions}{!text-1}
-    \slideQA{Could this really work?}{A: It all depends}
-    \slideLiterature{book-cover}{http://somewhere.com/book}{Title}{!book-chapters}
+    \slideTextImage[type=diagram, title=slideTextImage, image=img-1]{!tree-1}
+    \slideImageText[type=diagram, title=slideImageText, image=img-1]{!tree-1}
+    \slideImage[title=slideImage, image=img-1]
+    \slideDoubleImage[title=slideDoubleImage, image/1=img-1, image/2=img-1]
+    %\slideBigImage[image=img-1]
 
-    %% Explore Concept templates
-    % Concepts with Text & Explanation
-    \slideConceptOne[title=slideConcept, font=big, one=72\%]{!text-1}
-    \slideConceptTwo[title=slideConceptTwo, font=big, color=true, one=72\%, two=25\%]{!text-1}{!text-1}
-    \slideConceptThree[title=slideConceptThree, font=larger, one=72\%, two=25\%, three=19.5\%]{Explanation 1}{Explanation 2}{Explanation 3}
-    \slideConceptFour[title=slideConceptFour, font=large, one=72, two=25, three=19.5, four=10]{Explanation 1}{Explanation 2}{Explanation 3}{Explanation 4}
-    
-    % Concepts with Image & Explanation
-    \slideConceptOne[title=slideConcept (image), type=image, one=fau-logo]{!text-1}
-    \slideConceptTwo[title=slideConceptTwo (image), type=image, one=fau-logo, two=fau-logo]{!text-1}{!text-1}
-    \slideConceptThree[title=slideConceptThree (image), type=image, one=fau-logo, two=fau-logo, three=fau-logo]{Explanation 1}{Explanation 2}{Explanation 3}
-    \slideConceptFour[title=slideConceptFour (image), type=image, one=fau-logo, two=fau-logo, three=fau-logo, four=fau-logo]{Explanation 1}{Explanation 2}{Explanation 3}{Explanation 4}
+    %%
+    %% QUOTE templates
+    \slideQuote[title=Some Other Templates to Explore]
+    \slideQuoteText[title=The centrality of interactions]{!text-1}
+    \slideQuoteText[type=diagram, title=The centrality of interactions]{!tree-1}
+    \slideTextQuote[type=diagram, title=The centrality of interactions]{!tree-1}
+    \slideQA[question=Could this really work?, answer=A: It all depends]
+    \slideLiterature[image=book-cover, link=http://somewhere.com/book, title=Title]{!book-chapters}
 
-    %% Close the Slide Deck
+    %%
+    %% DEFINITION Templates    
+
+    \slideDefinitions[type=text,
+                  arrow=true,
+                  title=Title,
+                  title/1=Title,
+                  title/2=Title 25,
+                  title/3=Title 35,
+                  text/1=!text-1,
+                  text/2=!text-1]
+
+    \slideProgress[type=text,
+                  arrow=true,
+                  title=Title,
+                  title/1=Title,
+                  title/2=Title 25,
+                  title/3=Title 35,
+                  text/1=!text-1,
+                  text/2=!tree-1]
+
+    \slideEvolution[type=text,
+                  font=h3,
+                  title=Title,
+                  title/1=Title,
+                  title/2=Title 25,
+                  title/3=Title 35,
+                  title/4=Title 45,
+                 % title/5=Title 55,
+                  text/1=Step 1,
+                  text/2=Step 2,
+                  text/3=Step 3,
+                  text/4=Step 4]
+
+    % Close the Slide Deck
     \slideBackCover
 \end{document}
 

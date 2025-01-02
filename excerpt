@@ -1,0 +1,198 @@
+
+
+    ====
+    \begin{frame}[plain]
+
+    \IfStrEq{\myType}{text}{%
+        \elementTitle{\myTitle}
+        \ifthenelse{\boolean{\myColor}{}}{
+            \layoutColor[target=body, slicesH=3, targetH=1]{fau-shade}
+        }{}
+        \layoutText[target=body, slicesH=3, targetH=1, font=\myFont]{\myOne} 
+        \layoutText[target=body, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
+        \elementBanner
+    }{
+        \layoutImage[target=page, slicesH=2, targetH=1, padR=0.3cm]{\myOne}
+        \layoutText[target=page, slicesH=2, slicesV=2, targetH=2, targetV=1, padR=0.2cm, font=large]{\myTitle} 
+        \layoutText[target=page, slicesH=2, slicesV=2, targetH=2, targetV=2, halign=l, valign=t, padR=0.2cm, font=body]{#2} 
+    }
+    \end{frame}
+}
+
+%% @template Concepts Two (Title + 2x (Concept + Explanation))
+%% Present a page with TWO Concepts on the Left and their explanatiosn on the Right
+%% Example:
+%%      \slideConceptTwo[title=slideConceptTwo, font=big, color=true, one=72\%, two=25\%]{\input{tests/text-1.txt}}{\input{tests/text-1.txt}}
+%% params: conceptParams{1}, explain_1{2}, explain_2{3}
+\newcommand{\slideConceptTwo}[3][]{ 
+    \pgfkeys{/conceptParams/.cd, #1}
+    \pgfkeys{/conceptParams/title/.get=\myTitle}%
+    \pgfkeys{/conceptParams/one/.get=\myOne}%
+    \pgfkeys{/conceptParams/two/.get=\myTwo}%
+    \pgfkeys{/conceptParams/type/.get=\myType}%
+    \pgfkeys{/conceptParams/font/.get=\myFont}%
+    \pgfkeys{/conceptParams/color/.get=\myColor}%
+
+    \begin{frame}[plain]
+    \elementTitle{\myTitle}
+
+    \IfStrEq{\myType}{text}{%
+        \ifthenelse{\boolean{\myColor}{}}{
+            \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1]{fau-shade}
+            \layoutColor[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+        }{}
+
+        \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, font=\myFont]{\myOne}
+        \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, font=\myFont]{\myTwo}
+    }{
+        \layoutImage[target=body, slicesV=2, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
+        \layoutImage[target=body, slicesV=2, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myTwo}
+    }
+
+    \layoutText[target=body, slicesV=2, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
+    \layoutText[target=body, slicesV=2, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#3}
+    \elementBanner
+    \end{frame}
+}
+
+
+%% @template Concepts Three (Title + 3x (Concept + Explanation))
+%% Present a page with THREE Concepts on the Left and their explanatiosn on the Right
+%% Example:
+%%      \slideConceptThree[title=slideConceptThree, font=larger, one=72\%, two=25\%, three=19.5\%]{Explanation 1}{Explanation 2}{Explanation 3}
+%% params: conceptParams{1}, explain_1{2}, explain_2{3}, explain_3{4}
+\newcommand{\slideConceptThree}[4][]{ 
+    \pgfkeys{/conceptParams/.cd, #1}
+    \pgfkeys{/conceptParams/title/.get=\myTitle}%
+    \pgfkeys{/conceptParams/one/.get=\myOne}%
+    \pgfkeys{/conceptParams/two/.get=\myTwo}%
+    \pgfkeys{/conceptParams/three/.get=\myThree}%
+    \pgfkeys{/conceptParams/type/.get=\myType}%
+    \pgfkeys{/conceptParams/font/.get=\myFont}%
+    \pgfkeys{/conceptParams/color/.get=\myColor}%
+
+    \begin{frame}[plain]
+    \elementTitle{\myTitle}
+
+    \IfStrEq{\myType}{text}{%
+        \ifthenelse{\boolean{\myColor}{}}{
+            \layoutColor[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1]{fau-shade}
+            \layoutColor[target=body, slicesV=3, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+            \layoutColor[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1]{fau-shade}
+            \layoutColor[target=body, slicesV=3, targetV=3, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+        }{}
+
+        \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1, font=\myFont]{\myOne}
+        \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=1, font=\myFont]{\myTwo}
+        \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1, font=\myFont]{\myThree}
+    }{
+        \layoutImage[target=body, slicesV=3, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
+        \layoutImage[target=body, slicesV=3, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myTwo}
+        \layoutImage[target=body, slicesV=3, targetV=3, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myThree}
+    }
+
+    \layoutText[target=body, slicesV=3, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2}
+    \layoutText[target=body, slicesV=3, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#3}
+    \layoutText[target=body, slicesV=3, targetV=3, slicesH=3, targetH=2, mergeH=2, halign=l]{#4}
+    \elementBanner
+    \end{frame}
+}
+
+%% @template Concepts Four (Title + 4x (Concept + Explanation))
+%% Present a page with FOUR Concepts on the Left and their explanatiosn on the Right
+%% Example:
+%%      \slideConceptFour[title=slideConceptFour, font=section, one=72, two=25, three=19.5, four=10]{Explanation 1}{Explanation 2}{Explanation 3}{Explanation 4}
+%% params: conceptParams{1}, explain_1{2}, explain_2{3}, explain_3{4}, explain_4{5}
+\newcommand{\slideConceptFour}[5][]{ 
+    \pgfkeys{/conceptParams/.cd, #1}
+    \pgfkeys{/conceptParams/title/.get=\myTitle}%
+    \pgfkeys{/conceptParams/one/.get=\myOne}%
+    \pgfkeys{/conceptParams/two/.get=\myTwo}%
+    \pgfkeys{/conceptParams/three/.get=\myThree}%
+    \pgfkeys{/conceptParams/four/.get=\myFour}%
+    \pgfkeys{/conceptParams/type/.get=\myType}%
+    \pgfkeys{/conceptParams/font/.get=\myFont}%
+    \pgfkeys{/conceptParams/color/.get=\myColor}%
+
+    \begin{frame}[plain]
+    \elementTitle{\myTitle}
+
+    \IfStrEq{\myType}{text}{%
+        \ifthenelse{\boolean{\myColor}{}}{
+            \layoutColor[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1]{fau-shade}
+            \layoutColor[target=body, slicesV=4, targetV=1, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+            \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1]{fau-shade}
+            \layoutColor[target=body, slicesV=4, targetV=3, slicesH=3, targetH=2, mergeH=2]{fau-shade}
+        }{}
+        \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1, font=\myFont]{\myOne}
+        \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=1, font=\myFont]{\myTwo}
+        \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1, font=\myFont]{\myThree}
+        \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=1, font=\myFont]{\myFour}
+    }{%
+        \layoutImage[target=body, slicesV=4, targetV=1, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myOne}
+        \layoutImage[target=body, slicesV=4, targetV=2, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myTwo}
+        \layoutImage[target=body, slicesV=4, targetV=3, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myThree}
+        \layoutImage[target=body, slicesV=4, targetV=4, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\myFour}
+    }
+
+    \layoutText[target=body, slicesV=4, targetV=1, slicesH=3, targetH=2, mergeH=2, halign=l]{#2} 
+    \layoutText[target=body, slicesV=4, targetV=2, slicesH=3, targetH=2, mergeH=2, halign=l]{#3}
+    \layoutText[target=body, slicesV=4, targetV=3, slicesH=3, targetH=2, mergeH=2, halign=l]{#4}
+    \layoutText[target=body, slicesV=4, targetV=4, slicesH=3, targetH=2, mergeH=2, halign=l]{#5}
+ 
+    \elementBanner
+    \end{frame}
+}
+
+
+
+
+
+===
+===
+===
+
+
+
+\begin{document}
+    \slideCover{Advanced}
+    \slideDefinitions[type=text,
+                  arrow=true,
+                  title=Title,
+                  title/1=Title,
+                  title/2=Title 25,
+                  title/3=Title 35,
+                  title/4=Title 45,
+                  text/1=!text-1,
+                  text/2=!text-1]
+
+    \slideProgress[type=text,
+                  arrow=true,
+                  title=Title,
+                  title/1=Title,
+                  title/2=Title 25,
+                  title/3=Title 35,
+                  text/1=!text-1,
+                  text/2=!tree-1]
+
+    \slideEvolution[type=text,
+                  font=h3,
+                  title=Title,
+                  title/1=Title,
+                  title/2=Title 25,
+                  title/3=Title 35,
+                  title/4=Title 45,
+                 % title/5=Title 55,
+                  text/1=Step 1,
+                  text/2=Step 2,
+                  text/3=Step 3,
+                  text/4=Step 4]
+
+\end{document}
+
+
+
+
+
+
+
