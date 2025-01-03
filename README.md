@@ -58,7 +58,7 @@ or leveraging AI outputs—can maintain a polished, professional appearance with
 %%
 \begin{document}
     % Open slide deck
-    \slideCover[title=Hello World!]
+    \slideCover{Hello World!}
 
     % Agenda template with topics
     \slideAgenda{Topic 1 \\ Topic 2}

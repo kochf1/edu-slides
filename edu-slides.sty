@@ -566,10 +566,8 @@
 %% Example:
 %%      \slideCover{Lesson 1 \\ Introductions}
 %% params:  [templateParams(title)][1]
-\newcommand{\slideCover}[1][]{ 
+\newcommand{\slideCover}[1]{ 
     \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
     \pgfkeys{/params/course/.get=\course}%
     \pgfkeys{/params/course/code/.get=\courseCode}
     \pgfkeys{/params/course/logo/.get=\courseLogo}
@@ -594,7 +592,7 @@
              {\layoutText[target=body, slicesH=2, slicesV=3, targetV=1, halign=l, valign=t, font=body]{\courseCode \\ \course}}}
 
         %% Lesson Title
-        \layoutText[target=body, slicesH=2, slicesV=3, targetV=2, halign=l, font=title]{\myTitle}
+        \layoutText[target=body, slicesH=2, slicesV=3, targetV=2, halign=l, font=title]{#1}
 
         %% Author information
         \ifthenelse{\equal{\author}{}}{}
