@@ -542,9 +542,13 @@
     \pgfkeys{/templateParams/type/.get=\localType}%
     \pgfkeys{/templateParams/title/.get=\localTitle}%
 
-    \ifthenelse{\equal{\localType}{half}}
-        {\layoutText[target=header, slicesH=2, halign=l, font=title]{\localTitle}}
-        {\layoutText[target=header, halign=l, font=title]{\localTitle}}
+    \ifthenelse{\equal{\localType}{left}}
+        {\layoutText[target=header, slicesH=2, targetH=1, halign=l, font=title]{\localTitle}}
+        {\ifthenelse{\equal{\localType}{right}}
+            {\layoutText[target=header, slicesH=2, targetH=2, halign=l, font=title]{\localTitle}}
+            {\layoutText[target=header, halign=l, font=title]{\localTitle}}
+        }
+
 }
 
 %% @layout Add Compilation Time marker to Footer
@@ -612,7 +616,7 @@
 \newcommand{\slideAgenda}[1]{ 
     \resetTemplateParams
     \begin{frame}[plain]
-    \elementTitle[type=half, title=Agenda] %% Title
+    \elementTitle[type=left, title=Agenda] %% Title
     \layoutColor[target=page, slicesH=2, targetH=2]{\defaultColor} %% Color Box on the Right
     \layoutText[target=body, slicesH=2, targetH=1, halign=l, valign=t]{#1} %% Text on the Left
     \elementBanner
@@ -660,7 +664,7 @@
     \IfStrEq{\myType}{diagram}{ \def\localH{c} \def\localV{c}}{ \def\localH{l} \def\localV{t} }
 
     \begin{frame}[plain]
-        \elementTitle[type=half, title=\myTitle] %% Title
+        \elementTitle[type=left, title=\myTitle] %% Title
         \layoutText[target=body, halign=\localH, valign=\localV]{#2} %% Text alignment based on optional parameter
         \elementBanner
     \end{frame}
@@ -680,7 +684,7 @@
     \IfStrEq{\myType}{diagram}{ \def\localH{c} \def\localV{c}}{ \def\localH{l} \def\localV{t} }
 
     \begin{frame}[plain]
-    \elementTitle[type=half, title=\myTitle] %% Title
+    \elementTitle[type=left, title=\myTitle] %% Title
     \layoutText[target=body, slicesH=2, targetH=1, halign=\localH, valign=\localV]{#2} %% Text on the Left-box
     \layoutText[target=body, slicesH=2, targetH=2, halign=l, valign=t]{#3} %% Text on the Right-box
     \elementBanner
@@ -701,7 +705,7 @@
 
 
     \begin{frame}[plain]
-    \elementTitle[type=half, title=\myTitle] %% Title
+    \elementTitle[type=left, title=\myTitle] %% Title
     \layoutText[target=body, slicesH=2, targetH=1, halign=\localH, valign=\localV]{#3} %% Text on the Left-box
     \layoutImage[target=body, slicesH=2, targetH=2]{#2} %% Image on the Right-box
     \elementBanner
@@ -721,7 +725,7 @@
     \IfStrEq{\myType}{diagram}{ \def\localH{c} \def\localV{c}}{ \def\localH{l} \def\localV{t} }
 
     \begin{frame}[plain]
-    \elementTitle[type=half, title=\myTitle] %% Title
+    \elementTitle[type=right, title=\myTitle] %% Title
     \layoutText[target=body, slicesH=2, targetH=2, halign=\localH, valign=\localV]{#3} %% Text on the Left-box
     \layoutImage[target=body, slicesH=2, targetH=1]{#2} %% Image on the Left-box
     \elementBanner
