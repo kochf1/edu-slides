@@ -2,6 +2,7 @@
 %% Copyright 2024 Fernando Koch
 %% edu-style.sty, Latex style for Simple Education Slides.
 %%
+%% v0.3.1 Bug fix: error handling embedded commands
 %% v0.3 Add support to 'diagram', improved parameter passing, added new templates (slideDefinitions, slideProgress, slideEvolution)
 %% v0.2 Improved Image and Text file handling capabilities 
 %% v0.1 Initial Release
@@ -65,14 +66,12 @@
         course/logo/.initial    = ./logos/cen4010-logo.png,
     %
         % Text
-        text/.initial             = {.tex,.txt,.tikz}, % File extensions to try for Text
+        text/.initial             = {.tex, .tikz}, % File extensions to try for Text
         text/locations/.initial   = {., ./texts, ./diagrams}, % Folder locations to look for Text
-        text/completions/.initial  = {,}, % Additional filenames to try out
     %
         % Images
         image/.initial             = {,.png, .jpg}, % File extensions to try for Image
         image/locations/.initial   = {., ./images, ./logos, ./stock}, % Folder locations to look for Image
-        image/completions/.initial = {,-logo,-icon,-info}, % Additional filenames to try out
     %
         % Debug
         debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
@@ -362,17 +361,14 @@
     \global\let\fileFound\empty 
 
     % Iterate over the extensions and locations to find the file
-    \foreach \completion in \completions {%
-        \foreach \location in \locations {%
-            \foreach \extension in \extensions {%
-                \edef\fname{\location/#3\completion\extension}
-                \IfStrEq{\debug}{true}{Scanning: \fname \\}{} 
-                \IfFileExists{\fname}{
-                    \IfStrEq{\debug}{true}{FOUND: \fname \\}{}
-                    \xdef\fileFound{\fname}
-                }{}
-                \ifx\fileFound\empty{}\else{\breakforeach}\fi
-            }
+    \foreach \location in \locations {%
+        \foreach \extension in \extensions {%
+            \edef\fname{\location/#3\extension}
+            \IfStrEq{\debug}{true}{Scanning: \fname \\}{} 
+            \IfFileExists{\fname}{
+                \IfStrEq{\debug}{true}{FOUND: \fname \\}{}
+                \xdef\fileFound{\fname}
+            }{}
             \ifx\fileFound\empty{}\else{\breakforeach}\fi
         }
         \ifx\fileFound\empty{}\else{\breakforeach}\fi
@@ -405,14 +401,14 @@
     \pgfkeys{/layoutParams/color/.get=\myFontColor}%
     \pgfkeys{/font/\pgfkeysvalueof{/layoutParams/font}/size/.get=\myFontSize}%
     \pgfkeys{/font/\pgfkeysvalueof{/layoutParams/font}/space/.get=\myFontSpace}%
+    \edef\localText{\detokenize{#2}}
 
-    \IfBeginWith{#2}{!}{
+    \IfBeginWith{\localText}{!}{
         \StrGobbleLeft{#2}{1}[\textRef]
-        \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont \textcolor{\myFontColor}
-                    {\ImportFile[]{text}{\textRef}}}
+        \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont {\ImportFile[]{text}{\textRef}}}
     }
     {
-        \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont \textcolor{\myFontColor} #2}
+        \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont #2}
     }
 }
 
@@ -486,8 +482,6 @@
         image/3/.initial = ,
         image/4/.initial = ,
         link/.initial   =, 
-        question/.initial   =, 
-        answer/.initial   =, 
         arrow/.initial  = true,
         type/.initial   = text,
         font/.initial   = title,
@@ -518,8 +512,6 @@
     \pgfkeyssetvalue{/templateParams/image/3}{}%
     \pgfkeyssetvalue{/templateParams/image/4}{}%
     \pgfkeyssetvalue{/templateParams/link}{}%
-    \pgfkeyssetvalue{/templateParams/question}{}%
-    \pgfkeyssetvalue{/templateParams/answer}{}%
     \pgfkeyssetvalue{/templateParams/arrow}{true}%
     \pgfkeyssetvalue{/templateParams/type}{text}%
     \pgfkeyssetvalue{/templateParams/font}{title}%
@@ -618,8 +610,9 @@
 %% Present the Agenda
 %% Example:
 %%     \slideAgenda{1. Introduction \\ 2. Main Topics \\ 3. Conclusion} 
-%% params: agenda{1}
+%% params: agenda[1]
 \newcommand{\slideAgenda}[1]{ 
+    \resetTemplateParams
     \begin{frame}[plain]
     \elementTitle[type=half, title=Agenda] %% Title
     \layoutColor[target=page, slicesH=2, targetH=2]{\defaultColor} %% Color Box on the Right
@@ -660,8 +653,8 @@
 %% Display a title and accompanying full-box text
 %% Example:
 %%      \slideTeleprompt[type=diagram, title=Title]{Body Text}
-%% params:  [templateParams(title)(image)][1], text{1}
-\newcommand{\slideTeleprompt}[2][text]{ 
+%% params:  templateParams(type=text | diagram, title)[1], text[2]
+\newcommand{\slideTeleprompt}[2][]{ 
     \resetTemplateParams
     \pgfkeys{/templateParams/.cd, #1}
     \pgfkeys{/templateParams/type/.get=\myType}%
@@ -679,8 +672,8 @@
 %% Present a title with two sections of text, one on the left and one on the right
 %% When marked as Diagram, it is expecte the diagram will be the first item (left), which will be centered.
 %% Example:
-%%      \slideDouble[title=Title, image=Image]{Left Text}{Right Text}
-%% params:  [templateParams(title)(image)][1], text(left){2}, text(right){3}
+%%      \slideDouble[type=diagram, title=Title]{Left Text}{Right Text}
+%% params:  templateParams(type=text | diagram, title)[1], textL[2], textR[3]
 \newcommand{\slideDouble}[3][]{ 
     \resetTemplateParams
     \pgfkeys{/templateParams/.cd, #1}
@@ -699,8 +692,8 @@
 %% @template TextImage (Title + Text + Image)
 %% Combine a title with text on the left and an image on the right
 %% Example:
-%%      \slideTextImage[title=Title, image=Image]
-%% params:  [templateParams(title)(image)][1], text[2]
+%%      \slideTextImage[title=Title]{Image}{Text}
+%% params:  templateParams(type=text | diagram, title)[1], image[2], text[3]
 \newcommand{\slideTextImage}[2][]{
     \resetTemplateParams
     \pgfkeys{/templateParams/.cd, #1}
@@ -721,8 +714,8 @@
 %% @template ImageText (Title + Image + Text)
 %% Pair a title with an image on the left and text on the right
 %% Example:
-%%      \slideImageText[title=Title, image=Image]
-%% params:  [templateParams(title)(image)][1], text[2]
+%%      \slideImageText[title=Title]{Image}{Text}
+%% params:  templateParams(type=text | diagram, title)[1], image[2], text[3]
 \newcommand{\slideImageText}[2][]{
     \resetTemplateParams
     \pgfkeys{/templateParams/.cd, #1}
@@ -742,17 +735,16 @@
 %% @template Image (Title + Image)
 %% Show a title and a full-box image
 %% Example:
-%%      \slideImage[title=Title, image=Image]
-%% params:  [templateParams(title)(image)][1]
-\newcommand{\slideImage}[1][]{ 
+%%      \slideImage[title=Title]{Image}
+%% params:  templateParams(title)[1], image[2]
+\newcommand{\slideImage}[2][]{ 
     \resetTemplateParams
     \pgfkeys{/templateParams/.cd, #1}
     \pgfkeys{/templateParams/title/.get=\myTitle}%
-    \pgfkeys{/templateParams/image/.get=\myImage}%
 
     \begin{frame}[plain]
     \elementTitle[title=\myTitle] %% Title
-    \layoutImage[target=body]{\myImage} %% Image
+    \layoutImage[target=body]{#2} %% Image
     \elementBanner
     \end{frame}
 }
@@ -760,19 +752,17 @@
 %% @template DobleImage (Title + Image + Image)
 %% Include a title with two side-by-side images, one on the left and one on the right
 %% Example:
-%%      \slideDoubleImage[title=Title, image/1=Image, image/2=Image]
-%% params:  [templateParams(title)(image1)(image2)][1]
-\newcommand{\slideDoubleImage}[1][]{ 
+%%      \slideDoubleImage[title=Title]{Image1}{Image2}
+%% params:  templateParams(title)[1], image1[2], image2[3]
+\newcommand{\slideDoubleImage}[3][]{ 
     \resetTemplateParams
     \pgfkeys{/templateParams/.cd, #1}
     \pgfkeys{/templateParams/title/.get=\myTitle}%
-    \pgfkeys{/templateParams/image/1/.get=\myImageOne}%
-    \pgfkeys{/templateParams/image/2/.get=\myImageTwo}%
 
     \begin{frame}[plain]
     \elementTitle[title=\myTitle] %% Title
-    \layoutImage[target=body, slicesH=2, targetH=1]{\myImageOne}  %% Image on the Left-box
-    \layoutImage[target=body, slicesH=2, targetH=2]{\myImageTwo} %% Image on the Right-box
+    \layoutImage[target=body, slicesH=2, targetH=1]{#2}  %% Image on the Left-box
+    \layoutImage[target=body, slicesH=2, targetH=2]{#3} %% Image on the Right-box
     \elementBanner
     \end{frame}
 }
@@ -780,30 +770,25 @@
 %% @template BigImage (Full-Page Big Image)
 %% Display a full-page, single image on the whole page
 %% Example:
-%%      \slideBigImage[image=Image]
-%% params:  [templateParams(image}[1]
-\newcommand{\slideBigImage}[1][]{ 
+%%      \slideBigImage{Image}
+%% params: image[1]
+\newcommand{\slideBigImage}[1]{ 
     \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/image/.get=\myImage}%
-
     \begin{frame}[plain]
-    \layoutImage[target=page]{\myImage} %% Image on Full-page
+    \layoutImage[target=page]{#1} %% Image on Full-page
     \end{frame}
 }
 
 %% @template Quote (Full-Page Big Text)
 %% Highlight a full-page, prominent quote
 %% Example:
-%%      \slideQuote[title=Quote]
-%% params:  [templateParams(title}[1]
-\newcommand{\slideQuote}[1][]{ 
+%%      \slideQuote{Quote}
+%% params:  quote[1]
+\newcommand{\slideQuote}[1]{ 
     \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
 
     \begin{frame}[plain]
-    \layoutText[target=page, padL=0.4cm, padR=0.2cm, font=big]{\myTitle} 
+    \layoutText[target=page, padL=0.4cm, padR=0.2cm, font=big]{#1} 
     \end{frame}
 }
 
@@ -811,18 +796,17 @@
 %% Pair a larger quote on the left with accompanying text on the right
 %% Type=diagram will force centering the diagram in the Text box.
 %% Example:
-%%      \slideQuoteText[type=diagram, title=Quote]{Text}
-%% params: [templateParams(type={text | diagram}, title}[1] text{2}
-\newcommand{\slideQuoteText}[2][]{ 
+%%      \slideQuoteText[type=diagram]{Quote}{Text}
+%% params:  templateParams(type=diagram | text)[1], quote[2], text[3]
+\newcommand{\slideQuoteText}[3][]{ 
     \resetTemplateParams
     \pgfkeys{/templateParams/.cd, #1}
     \pgfkeys{/templateParams/type/.get=\myType}%
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
     \IfStrEq{\myType}{diagram}{ \def\localH{c}}{ \def\localH{l}}
 
     \begin{frame}[plain]
-    \layoutText[target=page, slicesH=2, targetH=1, halign=r, valign=c, padL=0.2cm, padR=0.2cm, font=larger]{\myTitle} %% Large Text on the Left-box
-    \layoutText[target=page, slicesH=2, targetH=2, halign=\localH, font=body]{#2} %% Text on the Right-box
+    \layoutText[target=page, slicesH=2, targetH=1, halign=r, valign=c, padL=0.2cm, padR=0.2cm, font=larger]{#2} 
+    \layoutText[target=page, slicesH=2, targetH=2, halign=\localH, font=body]{#3} %% Text on the Right-box
     \elementBanner
     \end{frame}
 }
@@ -831,18 +815,17 @@
 %% Pair a a text on the left with a larger quote on the right.
 %% Type=diagram will force centering the diagram in the Text box.
 %% Example:
-%%      \slideTextQuote[type=diagram, title=Quote]{Text}
-%% params: [templateParams(type={text | diagram}, title}[1] text{2}
-\newcommand{\slideTextQuote}[2][]{
+%%      \slideTextQuote[type=diagram]{Quote}{Text}
+%% params:  templateParams(type=text | diagram)[1], quote[2], text[3]
+\newcommand{\slideTextQuote}[3][]{
     \resetTemplateParams
     \pgfkeys{/templateParams/.cd, #1}
     \pgfkeys{/templateParams/type/.get=\myType}%
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
     \IfStrEq{\myType}{diagram}{ \def\localH{c}}{ \def\localH{l}}
 
     \begin{frame}[plain]
-    \layoutText[target=page, slicesH=2, targetH=2, halign=l, padL=0.2cm, font=larger]{\myTitle}
-    \layoutText[target=page, slicesH=2, targetH=1, halign=\localH, padR=0.2cm, font=body]{#2}
+    \layoutText[target=page, slicesH=2, targetH=2, halign=l, padL=0.2cm, font=larger]{#2}
+    \layoutText[target=page, slicesH=2, targetH=1, halign=\localH, padR=0.2cm, font=body]{#3}
     \elementBanner
     \end{frame}
     }
@@ -851,16 +834,13 @@
 %% Present a larger quote on top with supporting text at the bottom
 %% Example:
 %%      \slideQA[question=Could this really work?, answer=A: It all depends}
-%% params: [templateParams(question, answer}[1]
-\newcommand{\slideQA}[1][]{ 
+%% params: question[1], answer[2]
+\newcommand{\slideQA}[2]{ 
     \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/question/.get=\myQuestion}%
-    \pgfkeys{/templateParams/answer/.get=\myAnswer}%
 
     \begin{frame}[plain]
-    \layoutText[target=page, slicesV=2, targetV=1, font=larger]{\myQuestion} %% Text on the Right-box
-    \layoutText[target=page, slicesV=2, targetV=2, font=title]{\myAnswer}
+    \layoutText[target=page, slicesV=2, targetV=1, font=larger]{#1}
+    \layoutText[target=page, slicesV=2, targetV=2, font=title]{#2}
     \elementBanner
     \end{frame}
 }
