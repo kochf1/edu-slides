@@ -814,19 +814,18 @@
 
 
 %% @template
-%% \slideMultiple[type=TYPE, title=TITLE, title/1=Title1, ..., title/N=TitleN, content/1=text-1, ...]
+%% \slideMultiple[type=TYPE, title=TITLE, title/1=Title1, ..., title/N=TitleN, text/1=text-1, ...]
 %% Generates a slide with multiple columns.
 %% TYPE (text(default), image, diagram) defines the type of each column's title
 %% TITLE (optional) defines the slide TITLE
 %% title/n defines the TITLE_n for column N
-%% text/n defines the text for column N
+%% text/n defines the TEXT_n for column N
 %%
 \newcommand{\slideMultiple}[1][]{ 
     \resetSlideParams
     \pgfkeys{/slideParams/.cd, #1}
     \pgfkeys{/slideParams/title/.get=\myTitle}%
     \pgfkeys{/slideParams/type/.get=\myType}%
-    \pgfkeys{/slideParams/color/.get=\myColor}%
     \pgfkeys{/slideParams/font/.get=\myFont}%
     \global\let\partCount\empty
 
@@ -846,7 +845,7 @@
             }{
                 \layoutElement[type=image, target=body, slicesV=5, targetV=1, mergeV=2, slicesH=\partCount, targetH=\i, valign=t, padB=0.1cm, padL=0.1cm, padR=0.05cm]{\localTitle}
             }
-            \layoutElement[type=text, target=body, slicesV=5, targetV=3, mergeV=3, slicesH=\partCount, targetH=\i, valign=t, padL=0.1cm, padR=0.05cm]{\pgfkeys{/slideParams/content/\i}}
+            \layoutElement[type=text, target=body, slicesV=5, targetV=3, mergeV=3, slicesH=\partCount, targetH=\i, valign=t, padL=0.1cm, padR=0.05cm]{\pgfkeys{/slideParams/text/\i}}
         }    
    
         \elementBanner
