@@ -1,7 +1,7 @@
 %%
 %% Copyright 2024 Fernando Koch
-%% main.tex, a simple 'Getting Starter'.
-%
+%% main.tex, Getting Started for edu-styles.sty
+%%
 % This work may be distributed and/or modified under the
 % conditions of the LaTeX Project Public License, either version 1.3
 % of this license or (at your option) any later version.
@@ -15,127 +15,79 @@
 %   https://github.com/kochf1/edu-slides
 %
 % Disclaimer: 
-% Diverse Generative AI models have been applied during the development of 
-% this application.
-%
+% Generative AI has been used to help developing this package.
+% 
+
 
 \documentclass[aspectratio=169]{beamer}
 \usepackage{edu-slides}
 
-%% 
-%%
-%% (Step 1) Adjust the Configurations
-%%
-
 \pgfkeys{
     /params/.is family,
     /params/.cd,
-        % Author
+        % Logo
+        logo/.initial           = logos/fau-logo.png,
+    %
+        % Banner
+        banner/.initial         = logos/fau-banner.png,
+    % 
         author/.initial         = Dr. Fernando Koch,
         author/email/.initial   = kochf@fau.edu,
-        author/url/.initial     = http://linkedin.com/in/fkoch,
+        author/url/.initial     = ,
     % 
         % Course
         course/.initial         = Principles of Software Engineering,
-        course/code/.initial    = CEN~4010,
-        course/logo/.initial    = logos/cen4010-logo.png,
-    %   
+        course/code/.initial    = CEN4010,
+        course/logo/.initial    = ./logos/cen4010-logo.png,
+    %
         % Debug
+        debug/layout/.initial   = false,    %% mark positions, so you can adjust the layouts
         debug/import/.initial   = false,     %% detail process of finding and importing files
-        debug/layout/.initial   = false,     %% mark positions, so you can adjust the layouts
-        debug/time/.initial     = true,      %% add marker with time of compilation on Cover and BackCover
+        debug/time/.initial     = true,     %% add marker with time of compilation on Cover and BackCover
 }
-
-%%
-%% (Step 2) Create the sequence of slides and content.
-%% You can find more Slide Templates through the Documentation on GitHub.
-%%
 
 \begin{document}
-
-\slideImageText[title=Fernando Koch]{fkoch}{
-    \begin{itemize}
-        \item About me
-        \item About This Course
-        \item How are we going to work?
-        \item What you need to configure?
-        \item Survey
-    \end{itemize}
-}
-
-
-    %% Open the Slide Deck
-    \slideCover{Lesson 1 \\ Introductions}
-
-    \slideImageText[title=Fernando Koch]{fkoch}{
+    \slideCover{Introduction}
+    
+    \slideAgenda{
         \begin{itemize}
             \item About me
             \item About This Course
-            \item How are we going to work?
-            \item What you need to configure?
+            \item Rules of Engagement
+            \item Housekeeping
             \item Survey
         \end{itemize}
     }
 
-    %%    
-    %% STANDARD templates
 
-    \slideAgenda{Chapter 1 \\ Chapter 2 \\ Chapter 3}
-    \slideTeleprompt[type=diagram, title=slideTeleprompt]{!function-1}
-    \slideDouble[title=slideDouble]{!text-1}{!text-1}
-    \slideDouble[type=diagram, title=slideDouble]{!tree-1}{!text-1}
+    % Slide with Double Columns, Right is image & Title 
+    \slideDouble[type/2=image, title=About this Course]{
+        \textbf{CEN4010 - Principles of Software Engineering}
+        \SPACER
+        \begin{itemize}
+            \item Understanding of the principles of professional Software Engineering
+            \item Explore Software Development Processes 
+            \item Processes and methodologies in Software Engineering 
+            \item Practical skills in planning, designing, testing, and maintaining software systems.
+            \SPACER
+            \item \textit{Examine the impact of Generative AI on Software Development.}
+        \end{itemize}
+    }{img-1}
 
-    \slideTextImage[type=diagram, title=slideTextImage]{img-1}{!tree-1}
-    \slideImageText[type=diagram, title=slideImageText]{img-1}{!tree-1}
-    \slideImage[title=slideImage]{img-1}
-    \slideDoubleImage[title=slideDoubleImage]{img-1}{img-1}
-    \slideBigImage{img-1}
+    % Slide with One Column, Big Image
+    \slideSimple[type=image]{img-1}
 
-    %%
-    %% QUOTE templates
-    \slideQuote{Some Other Templates to Explore}
-    \slideQuoteText{The centrality of interactions}{!text-1}
-    \slideQuoteText[type=diagram]{The centrality of interactions}{!tree-1}
-    \slideTextQuote[type=diagram]{The centrality of interactions}{!tree-1}
-    \slideQA{Could this really work?}{answer=A: It all depends}
-    \slideLiterature[image=book-cover, link=http://somewhere.com/book, title=Title]{!book-chapters}
+    % Slide with One Column, Big Image & Title
+    \slideSimple[type=image, title=Big Image Slide]{img-1}
 
-    %%
-    %% DEFINITION Templates    
+    % Slide with Double Columns, both sides are images & Title
+    \slideDouble[type/1=image, type/2=image, title=Two Images]{img-1}{img-1}
 
-    \slideDefinitions[type=text,
-                  arrow=true,
-                  title=Title,
-                  title/1=Title,
-                  title/2=Title 25,
-                  title/3=Title 35,
-                  text/1=!text-1,
-                  text/2=!text-1]
+    % Slide with Diagram (TIKZ) on the left, Image on the right, & Title
+    \slideDouble[type/1=diagram, type/2=image, title=Diagram \& Images]{function-1}{img-1}
 
- %   \slideProgress[type=text,
- %                 arrow=true,
- %                 title=Title,
- %                 title/1=Title,
- %                title/2=Title 25,
- %                 title/3=Title 35,
- %                 text/1=!text-1,
- %                 text/2=!tree-1]
-
- %   \slideEvolution[type=text,
- %                 font=h3,
- %                 title=Title,
- %                 title/1=Title,
- %                 title/2=Title 25,
- %                 title/3=Title 35,
- %                 title/4=Title 45,
-                 % title/5=Title 55,
- %                 text/1=Step 1,
- %                 text/2=Step 2,
- %                 text/3=Step 3,
- %                 text/4=Step 4]
-
-    % Close the Slide Deck
-    \slideBackCover
+    \slideBackCover{}
+  
 \end{document}
 
 

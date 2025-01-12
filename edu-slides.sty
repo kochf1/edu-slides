@@ -2,7 +2,8 @@
 %% Copyright 2024 Fernando Koch
 %% edu-style.sty, Latex style for Simple Education Slides.
 %%
-%% v0.3.4 Bug fixes, improvements, new templates, pre-defined utilities
+%% v0.5 Complete re-work of slide templates and composition logic
+%% v0.4 Fixes and small improvements
 %% v0.3 Add support to 'diagram', improved parameter passing, added new templates (slideDefinitions, slideProgress, slideEvolution)
 %% v0.2 Improved Image and Text file handling capabilities 
 %% v0.1 Initial Release
@@ -20,8 +21,7 @@
 %   https://github.com/kochf1/edu-slides
 %
 % Disclaimer: 
-% Diverse Generative AI models have been applied during the development of 
-% this application.
+% Generative AI has been used to help developing this package.
 %
 
 \ProvidesPackage{edu-slides}
@@ -177,9 +177,9 @@
     /anchor/.is family,
     /anchor/.cd,
 %
-    page/x/.initial = 0.0cm,
+    page/x/.initial = 0.1cm,
     page/y/.initial = 0.0cm,
-    page/width/.initial = 16.0cm,
+    page/width/.initial = 15.8cm,
     page/height/.initial = 9.0cm,
 %
     header/x/.initial = 0.2cm,
@@ -202,6 +202,7 @@
 \pgfkeys{
     /layoutParams/.is family,
     /layoutParams/.cd,
+    type/.initial=text,             % Element type (text, image, ...)
     target/.initial=body,           % Target block (header, body, footer)
     slicesH/.initial=1,             % Number of horizontal slices
     slicesV/.initial=1,             % Number of vertical slices
@@ -218,28 +219,27 @@
     font/.initial=body,             % font-style (for objects with Text)
     color/.initial=\defaultColor,   % font-color (for objects with Text)
     keepaspect/.initial=true,       % keep aspect ratio (for Image objects)
-    half/.initial=false             % generic designation if this layout should be half-ed
 }
 
 % internal command
 \newcommand{\resetLayoutParams}{ 
+    \pgfkeyssetvalue{/layoutParams/type}{text}%
+    \pgfkeyssetvalue{/layoutParams/target}{body}%
     \pgfkeyssetvalue{/layoutParams/slicesH}{1}%
     \pgfkeyssetvalue{/layoutParams/slicesV}{1}%
     \pgfkeyssetvalue{/layoutParams/targetH}{1}%
     \pgfkeyssetvalue{/layoutParams/targetV}{1}%
     \pgfkeyssetvalue{/layoutParams/mergeH}{1}%
     \pgfkeyssetvalue{/layoutParams/mergeV}{1}%
-    \pgfkeyssetvalue{/layoutParams/halign}{c}%
-    \pgfkeyssetvalue{/layoutParams/valign}{c}%
     \pgfkeyssetvalue{/layoutParams/padL}{0.0cm}%
     \pgfkeyssetvalue{/layoutParams/padR}{0.0cm}%
     \pgfkeyssetvalue{/layoutParams/padT}{0.0cm}%
     \pgfkeyssetvalue{/layoutParams/padB}{0.0cm}%
+    \pgfkeyssetvalue{/layoutParams/halign}{c}%
     \pgfkeyssetvalue{/layoutParams/valign}{c}%
     \pgfkeyssetvalue{/layoutParams/font}{body}%
     \pgfkeyssetvalue{/layoutParams/color}{\defaultColor}%
     \pgfkeyssetvalue{/layoutParams/keepaspect}{true}%
-    \pgfkeyssetvalue{/layoutParams/half}{false}%
 }
 \resetLayoutParams
 
@@ -315,10 +315,8 @@
     \pgfmathsetlengthmacro{\blockDY}{((\blockHeight / \slicesV))  - (\padT + \padB)  }%
 
     % Calculate slice coordinates    
-    \pgfmathsetlengthmacro{\x}{(\blockX + (\targetH-1)*\blockDX + (\targetH-1)*0.0cm) + \padL}%
-    %\pgfmathsetlengthmacro{\x}{(\blockX + (\targetH-1)*\blockDX + (\targetH-1)*0.4cm) + \padL}%
-    \pgfmathsetlengthmacro{\y}{(\blockY + (\targetV-1)*\blockDY + (\targetV-1)*0.0cm) + \padT}%
-    %\pgfmathsetlengthmacro{\y}{(\blockY + (\targetV-1)*\blockDY + (\targetV-1)*0.1cm) + \padT}%
+    \pgfmathsetlengthmacro{\x}{(\blockX + (\targetH-1)*\blockDX) + \padL}%
+    \pgfmathsetlengthmacro{\y}{(\blockY + (\targetV-1)*\blockDY) + \padT}%
 
     % Calculate slice dimensions
     \pgfmathsetlengthmacro{\dx}{(\mergeH  * \blockDX) - \padR}%
@@ -335,23 +333,6 @@
 %%%
 %%% UTILITIES
 %%%
-
-%% @layout Import CSV
-%% params: parameters{1},filename{3}
-\NewDocumentCommand{\inputTable}{O{} m}{%
-    \pgfplotstabletypeset[
-        col sep=semicolon, 
-        string type, 
-        every head row/.style={%
-            before row=\toprule,
-            after row=\midrule,
-        },
-            every last row/.style={
-            after row=\bottomrule
-        }, 
-        column type=P{#1}
-    ]{#2}
-}
 
 %% @layout Import contents from a File of given Type, considering Global Params $type/extensions, $type/locations, $type/completions
 %% params: parameters{1}, type{2}, filename{3}
@@ -383,10 +364,7 @@
     \else{
         \IfStrEq{#2}{image}
             {\includegraphics[#1]{\fileFound}}
-            {\IfStrEq{#2}{table}
-                {TABLE IMPORT NOT ENABLED!} %% @TODO \inputTable[#1]{\fileFound}
-                {\input{\fileFound}}
-            } 
+            {\input{\fileFound}}
     }\fi
 }
 
@@ -394,64 +372,32 @@
 %%% SLIDE ELEMENTS
 %%%
 
-%% @layout Container for Text Box; text can be loaded from a file as !filename.
-%% params: layoutParams{1}, text{2}
-\newcommand{\layoutText}[2][]{
+%% @layout Container for Element box
+%% params: layoutParams{1}, element{2}
+\newcommand{\layoutElement}[2][]{
+    \resetLayoutParams
     \pgfkeys{/layoutParams/.cd, #1}%
 
-    \resetLayoutParams
     \layoutCalculator{#1}
-    \pgfkeys{/layoutParams/color/.get=\myFontColor}%
-    \pgfkeys{/font/\pgfkeysvalueof{/layoutParams/font}/size/.get=\myFontSize}%
-    \pgfkeys{/font/\pgfkeysvalueof{/layoutParams/font}/space/.get=\myFontSpace}%
-    
-    \edef\localText{\detokenize{#2}}
-    
-    \IfBeginWith{\localText}{!}{
-        \StrGobbleLeft{#2}{1}[\textRef]
-        \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont {\ImportFile[]{text}{\textRef}}}
-    }
-    {
-        \layoutCreator{#1}{\fontsize{\myFontSize}{\myFontSpace} \selectfont #2}
-    }
-}
-
-
-%% @layout Container for Image Box
-%% params: layoutParams{1}, image{2}
-\newcommand{\layoutImage}[2][]{
-    \pgfkeys{/layoutParams/.cd, #1}%
-
-    \resetLayoutParams
-    \layoutCalculator{#1}
+    \pgfkeys{/layoutParams/type/.get=\thisType}%
+    \pgfkeys{/layoutParams/color/.get=\thisColor}%
+    \pgfkeys{/font/\pgfkeysvalueof{/layoutParams/font}/size/.get=\thisFontSize}%
+    \pgfkeys{/font/\pgfkeysvalueof{/layoutParams/font}/space/.get=\thisFontSpace}%
     \pgfmathsetlengthmacro{\dx}{\pgfkeysvalueof{/layoutParams/coordinate/dx}}%
     \pgfmathsetlengthmacro{\dy}{\pgfkeysvalueof{/layoutParams/coordinate/dy}}%
-    \pgfkeys{/layoutParams/keepaspect/.get=\keepaspect}
-
-    \ifthenelse{\boolean{\keepaspect}}{
-        \def\graphicOption{\ImportFile[width=\dx, height=\dy, keepaspectratio]{image}{#2}}
-    }{
-        \def\graphicOption{\ImportFile[width=\dx, height=\dy]{image}{#2}}
-    }
-    \layoutCreator{#1}{\graphicOption}
-}
-
-%% @layout Container for Colored Box
-%% params: layoutParams{1}, color{2}
-\newcommand{\layoutColor}[2][]{
-    \resetLayoutParams
-    \pgfkeys{/layoutParams/.cd, #1}%
-    \layoutCalculator{#1}
-    \pgfmathsetlengthmacro{\x}{\pgfkeysvalueof{/layoutParams/coordinate/x}}%
-    \pgfmathsetlengthmacro{\y}{\pgfkeysvalueof{/layoutParams/coordinate/y}}%
-    \pgfmathsetlengthmacro{\dx}{\pgfkeysvalueof{/layoutParams/coordinate/dx}}%
-    \pgfmathsetlengthmacro{\dy}{\pgfkeysvalueof{/layoutParams/coordinate/dy}}%
-    \begin{textblock*}{\dx}(\x,\y)
-        \begingroup 
-            \color{#2} \rule{\dx}{\dy}
-        \endgroup
-    \end{textblock*}
     
+    \IfStrEq{\thisType}{text}{ \layoutCreator{#1}{\fontsize{\thisFontSize}{\thisFontSpace} \selectfont #2} }{}
+    \IfStrEq{\thisType}{import}{ \layoutCreator{#1}{\ImportFile[]{text}{#2}} }{}
+    \IfStrEq{\thisType}{diagram}{ \layoutCreator{#1, halign=c}{\ImportFile[]{text}{#2}} }{}
+    \IfStrEq{\thisType}{image}{ \layoutCreator{#1}{\ImportFile[width=\dx, height=\dy, keepaspectratio]{image}{#2}} }{}
+    \IfStrEq{\thisType}{color}
+        {   \IfStrEq{#2}{}{\edef\thisColor{fau-blue}}{\edef\thisColor{#2}}
+            \begin{textblock*}{\dx}(\x,\y)
+            \begingroup 
+                \color{\thisColor} \rule{\dx}{\dy}
+            \endgroup
+           \end{textblock*}
+        }{}
 }
 
 
@@ -461,8 +407,27 @@
 %%%
 
 \pgfkeys{
-    /templateParams/.is family,
-    /templateParams/.cd,
+    /slideParams/.is family,
+    /slideParams/.cd,
+        halign/.initial = c,
+        valign/.initial = c,
+        link/.initial   =, 
+        distribution/.initial = 1/1,
+        font/.initial = body,
+        font/1/.initial = body,
+        font/2/.initial = body,
+        font/3/.initial = body,
+        font/4/.initial = body,
+        type/.initial = text,
+        type/1/.initial = text,
+        type/2/.initial = text,
+        type/3/.initial = text,
+        type/4/.initial = text,
+        image/.initial  =,
+        image/1/.initial = ,
+        image/2/.initial = ,
+        image/3/.initial = ,
+        image/4/.initial = ,
         title/.initial  = ,
         title/1/.initial = ,
         title/2/.initial = ,
@@ -480,50 +445,47 @@
         text/6/.initial = ,
         text/7/.initial = ,
         text/8/.initial = ,
-        image/.initial  =,
-        image/1/.initial = ,
-        image/2/.initial = ,
-        image/3/.initial = ,
-        image/4/.initial = ,
-        link/.initial   =, 
-        type/.initial   = text,
-        font/.initial   = title,
-        color/.initial  = true,
-        valign/.initial  = t,
-        halign/.initial  = c,
-        banner/.initial = true
 }
 
-\newcommand{\resetTemplateParams}{
-    \pgfkeyssetvalue{/templateParams/title}{}%
-    \pgfkeyssetvalue{/templateParams/title/1}{}%
-    \pgfkeyssetvalue{/templateParams/title/2}{}%
-    \pgfkeyssetvalue{/templateParams/title/3}{}%
-    \pgfkeyssetvalue{/templateParams/title/4}{}%
-    \pgfkeyssetvalue{/templateParams/title/5}{}%
-    \pgfkeyssetvalue{/templateParams/title/6}{}%
-    \pgfkeyssetvalue{/templateParams/title/7}{}%
-    \pgfkeyssetvalue{/templateParams/title/8}{}%
-    \pgfkeyssetvalue{/templateParams/text/1}{}%
-    \pgfkeyssetvalue{/templateParams/text/2}{}%
-    \pgfkeyssetvalue{/templateParams/text/3}{}%
-    \pgfkeyssetvalue{/templateParams/text/4}{}%
-    \pgfkeyssetvalue{/templateParams/text/5}{}%
-    \pgfkeyssetvalue{/templateParams/text/6}{}%
-    \pgfkeyssetvalue{/templateParams/text/7}{}%
-    \pgfkeyssetvalue{/templateParams/text/8}{}%
-    \pgfkeyssetvalue{/templateParams/image}{}%
-    \pgfkeyssetvalue{/templateParams/image/1}{}%
-    \pgfkeyssetvalue{/templateParams/image/2}{}%
-    \pgfkeyssetvalue{/templateParams/image/3}{}%
-    \pgfkeyssetvalue{/templateParams/image/4}{}%
-    \pgfkeyssetvalue{/templateParams/link}{}%
-    \pgfkeyssetvalue{/templateParams/type}{text}%
-    \pgfkeyssetvalue{/templateParams/font}{title}%
-    \pgfkeyssetvalue{/templateParams/color}{true}%
-    \pgfkeyssetvalue{/templateParams/valign}{t}%
-    \pgfkeyssetvalue{/templateParams/halign}{c}%
-    \pgfkeyssetvalue{/templateParams/banner}{true}%
+\newcommand{\resetSlideParams}{
+    \pgfkeyssetvalue{/slideParams/distribution}{1/1}%
+    \pgfkeyssetvalue{/slideParams/font}{body}%
+    \pgfkeyssetvalue{/slideParams/link}{}%
+    \pgfkeyssetvalue{/slideParams/halign}{c}%
+    \pgfkeyssetvalue{/slideParams/valign}{c}%
+    \pgfkeyssetvalue{/slideParams/font/1}{body}%
+    \pgfkeyssetvalue{/slideParams/font/2}{body}%
+    \pgfkeyssetvalue{/slideParams/font/3}{body}%
+    \pgfkeyssetvalue{/slideParams/font/4}{body}%
+    \pgfkeyssetvalue{/slideParams/halign}{c}%
+    \pgfkeyssetvalue{/slideParams/valign}{c}%
+    \pgfkeyssetvalue{/slideParams/type}{text}%
+    \pgfkeyssetvalue{/slideParams/type/1}{text}%
+    \pgfkeyssetvalue{/slideParams/type/2}{text}%
+    \pgfkeyssetvalue{/slideParams/type/3}{text}%
+    \pgfkeyssetvalue{/slideParams/type/4}{text}%
+    \pgfkeyssetvalue{/slideParams/image}{}%
+    \pgfkeyssetvalue{/slideParams/image/1}{}%
+    \pgfkeyssetvalue{/slideParams/image/2}{}%
+    \pgfkeyssetvalue{/slideParams/image/3}{}%
+    \pgfkeyssetvalue{/slideParams/image/4}{}%
+    \pgfkeyssetvalue{/slideParams/title}{}%
+    \pgfkeyssetvalue{/slideParams/title/1}{}%
+    \pgfkeyssetvalue{/slideParams/title/2}{}%
+    \pgfkeyssetvalue{/slideParams/title/3}{}%
+    \pgfkeyssetvalue{/slideParams/title/4}{}%
+    \pgfkeyssetvalue{/slideParams/title/5}{}%
+    \pgfkeyssetvalue{/slideParams/title/6}{}%
+    \pgfkeyssetvalue{/slideParams/title/7}{}%
+    \pgfkeyssetvalue{/slideParams/title/8}{}%
+    \pgfkeyssetvalue{/slideParams/text/1}{}%
+    \pgfkeyssetvalue{/slideParams/text/2}{}%
+    \pgfkeyssetvalue{/slideParams/text/3}{}%
+    \pgfkeyssetvalue{/slideParams/text/4}{}%
+    \pgfkeyssetvalue{/slideParams/text/5}{}%
+    \pgfkeyssetvalue{/slideParams/text/6}{}%
+    \pgfkeyssetvalue{/slideParams/text/7}{}%
+    \pgfkeyssetvalue{/slideParams/text/8}{}%
 }
 
 
@@ -534,36 +496,34 @@
 %% @layout Add Logo to Top-Left corner
 %% params: none
 \newcommand{\elementLogo}{
-    \layoutImage[target=header,halign=l]{\pgfkeysvalueof{/params/logo}}
+    \layoutElement[type=image, target=header, halign=l]{\pgfkeysvalueof{/params/logo}}
 }
 
 %% @layout Add Banner to Bottom-Left corner
 %% params: none
 \newcommand{\elementBanner}{
-    \layoutImage[target=footer, slicesH=2, halign=l]{\pgfkeysvalueof{/params/banner}}
+    \layoutElement[type=image, target=footer, slicesH=2, halign=l]{\pgfkeysvalueof{/params/banner}}
 }
 
 %% @layout Add Title to Header, Full- or Half-size (false) 
-%% params:  [templateParams(type=full | half)(title)][1]
-\newcommand{\elementTitle}[1][]{
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/type/.get=\localType}%
-    \pgfkeys{/templateParams/title/.get=\localTitle}%
+%% params:  [slideParams(type=full | half)(title)][1]
+\newcommand{\elementTitle}[2][]{
+    \pgfkeys{/slideParams/.cd, #1}
+    \pgfkeys{/slideParams/type/.get=\titleType}%
 
-    \ifthenelse{\equal{\localType}{left}}
-        {\layoutText[target=header, slicesH=2, targetH=1, halign=l, font=title]{\localTitle}}
-        {\ifthenelse{\equal{\localType}{right}}
-            {\layoutText[target=header, slicesH=2, targetH=2, halign=l, font=title]{\localTitle}}
-            {\layoutText[target=header, halign=l, font=title]{\localTitle}}
-        }
-
+    \IfStrEq{\titleType}{left}
+        {\layoutElement[type=text, target=header, slicesH=2, targetH=1, halign=l, font=title]{#2}}
+    { \IfStrEq{\titleType}{right}
+        {\layoutElement[type=text, target=header, slicesH=2, targetH=2, halign=l, font=title]{#2}}
+        {\layoutElement[type=text, target=header, halign=l, font=title]{#2}}
+    }
 }
 
 %% @layout Add Compilation Time marker to Footer
 %% params: halign{1}
 \newcommand{\elementCompilationTime}[1]{
     \ifthenelse{\boolean{\pgfkeysvalueof{/params/debug/time}}}
-        {\layoutText[target=footer, halign=#1, valign=b, font=tiny]{Compiled on \today{} at \DTMcurrenttime}}
+        {\layoutElement[type=text, target=footer, halign=#1, valign=b, font=tiny]{Compiled on \today{} at \DTMcurrenttime}}
         {} 
 }
 
@@ -577,9 +537,9 @@
 %% Open the presentation with a title.
 %% Example:
 %%      \slideCover{Lesson 1 \\ Introductions}
-%% params:  [templateParams(title)][1]
+%% params:  [slideParams(title)][1]
 \newcommand{\slideCover}[1]{ 
-    \resetTemplateParams
+    \resetSlideParams
     \pgfkeys{/params/course/.get=\course}%
     \pgfkeys{/params/course/code/.get=\courseCode}
     \pgfkeys{/params/course/logo/.get=\courseLogo}
@@ -591,27 +551,22 @@
         %% Logo
         \elementLogo
 
-        %% Course Logo
         %% If Course Logo is EMPTY, then default to Color Box with \defaultcolor
-        \ifthenelse{\equal{\courseLogo}{}}
-           { \layoutColor[target=page, slicesH=2, targetH=2]{\defaultColor} }
-           { \layoutImage[target=page, slicesH=2, targetH=2]{\courseLogo} }
+        \IfStrEq{\courseLogo}{}
+           { \layoutElement[type=color, target=page, slicesH=2, targetH=2]{\defaultColor} }
+           { \layoutElement[type=image, target=page, slicesH=2, targetH=2]{\courseLogo} }
 
         %% Course Code & Course Name
-
-        \ifthenelse{\equal{\courseCode}{}}{}
-            {\ifthenelse{\equal{\course}{}}{}
-             {\layoutText[target=body, slicesH=2, slicesV=3, targetV=1, halign=l, valign=t, font=body]{\courseCode \\ \course}}}
+        \layoutElement[type=text, target=body, slicesH=2, slicesV=3, targetV=1, halign=l, valign=t, font=body]{\courseCode \\ \course}
 
         %% Lesson Title
-        \layoutText[target=body, slicesH=2, slicesV=3, targetV=2, halign=l, font=title]{#1}
+        \layoutElement[type=text, target=body, slicesH=2, slicesV=3, targetV=2, halign=l, font=title]{#1}
 
         %% Author information
-        \ifthenelse{\equal{\author}{}}{}
-            {\layoutText[target=body, slicesH=2, slicesV=3, targetV=3, halign=l, valign=b]{\author \\ \email \\ \link}}
-        
-        %% Compilation time
-        \elementCompilationTime{l}
+        \layoutElement[type=text, target=body, slicesH=2, slicesV=3, targetV=3, halign=l, valign=b]{\author \\ \email \\ \link}
+
+         %% Compilation time
+         \elementCompilationTime{l}
 
     \end{frame}
 }
@@ -622,12 +577,12 @@
 %%     \slideAgenda{1. Introduction \\ 2. Main Topics \\ 3. Conclusion} 
 %% params: agenda[1]
 \newcommand{\slideAgenda}[1]{ 
-    \resetTemplateParams
+    \resetSlideParams
     \begin{frame}[plain]
-    \elementTitle[type=left, title=Agenda] %% Title
-    \layoutColor[target=page, slicesH=2, targetH=2]{\defaultColor} %% Color Box on the Right
-    \layoutText[target=body, slicesH=2, targetH=1, halign=l, valign=t]{#1} %% Text on the Left
-    \elementBanner
+        \elementTitle[type=left]{Agenda}
+        \elementBanner
+        \layoutElement[type=color, target=page, slicesH=2, targetH=2]{\defaultColor} 
+        \layoutElement[type=text, target=body, slicesH=2, targetH=1, halign=l, valign=t]{#1}
     \end{frame}
 }
 
@@ -645,222 +600,133 @@
 
     \begin{frame}[plain]
         %% Logo on Mid-Page
-        \layoutImage[target=page, slicesH=3, targetH=2, slicesV=3, targetV=2]{\logo}
+        \layoutElement[type=image, target=page, slicesH=3, targetH=2, slicesV=3, targetV=2]{\logo}
 
         %% Course Code & Course Name
-        \ifthenelse{\equal{\courseCode}{}}{}
-            {\ifthenelse{\equal{\course}{}}{}
-            {\layoutText[target=page, slicesV=3, targetV=3, valign=c]
-                {\courseCode~-~\course \\[1\baselineskip] \textbf{\author} \\ \email}}}
+        \layoutElement[type=text, target=page, slicesV=3, targetV=3, valign=c]
+                {\courseCode~-~\course \\[1\baselineskip] \textbf{\author} \\ \email}
         
         %% Compilation time
         \elementCompilationTime{c}
     \end{frame}
 }
 
-
-%% @template Blank (Text)
-%% Display full-page text
+%% @template Simple Column
 %% Example:
-%%      \slideBlank[type=diagram]{Body Text}
-%% params:  templateParams(type=text | diagram)[1], text[2]
-\newcommand{\slideBlank}[2][]{ 
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/type/.get=\myType}%
-    \IfStrEq{\myType}{diagram}{ \def\localH{c} \def\localV{c}}{ \def\localH{l} \def\localV{t} }
+%%      \slideSimple[title=Title]{Body Text}
+%%
+\newcommand{\slideSimple}[2][]{ 
+    \resetSlideParams
+    \pgfkeys{/slideParams/.cd, #1}
+    \pgfkeys{/slideParams/type/.get=\myType}%
+    \pgfkeys{/slideParams/title/.get=\myTitle}%
+    \pgfkeys{/slideParams/font/.get=\myFont}%
+    \pgfkeys{/slideParams/halign/.get=\paramHAlign}%
+
+    \edef\myTarget{body}
+    \edef\myHAlign{\paramHAlign}
+    \edef\myVAlign{t}
+    \edef\myPadL{0.0cm}
+    \edef\myPadR{0.0cm} 
 
     \begin{frame}[plain]
-        \layoutText[target=body, halign=\localH, valign=\localV]{#2}
+        \IfStrEq{\myTitle}{}
+            {\edef\myTarget{page} \edef\myVAlign{c}}
+            { \elementTitle[type=full]{\myTitle} \elementBanner}
+
+        \IfStrEq{\myType}{image}{\edef\myHAlign{c} \edef\myVAlign{c}}{}
+        \IfStrEq{\myFont}{body}{}
+            {\edef\myHAlign{c} \edef\myVAlign{c} \edef\myPadL{0.3cm} \edef\myPadR{0.3cm} }{}
+
+        \layoutElement[type=\myType, target=\myTarget, halign=\myHAlign, valign=\myVAlign, padL=\myPadL, padR=\myPadR, font=\myFont]{#2}
     \end{frame}
 }
 
 
-%% @template Teleprompt (Title + Text)
-%% Display a title and accompanying full-box text
+%% @template Double Column
 %% Example:
-%%      \slideTeleprompt[type=diagram, title=Title]{Body Text}
-%% params:  templateParams(type=text | diagram, title)[1], text[2]
-\newcommand{\slideTeleprompt}[2][]{ 
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/type/.get=\myType}%
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
-    \pgfkeys{/templateParams/banner/.get=\myBanner}%
-    \IfStrEq{\myType}{diagram}{ \def\localH{c} \def\localV{c}}{ \def\localH{l} \def\localV{t} }
-
-    \begin{frame}[plain]
-        \IfStrEq{\myBanner}{true}{\elementBanner}{}
-        \elementTitle[type=left, title=\myTitle]
-        \layoutText[target=body, halign=\localH, valign=\localV]{#2}
-    \end{frame}
-}
-
-%% @template Double (Title + Text + Text)
-%% Present a title with two sections of text, one on the left and one on the right
-%% When marked as Diagram, it is expecte the diagram will be the first item (left), which will be centered.
-%% Example:
-%%      \slideDouble[type=diagram, title=Title]{Left Text}{Right Text}
-%% params:  templateParams(type=text | diagram, title)[1], textL[2], textR[3]
+%%      \slideDouble[title=Title, type/1=image]{img-1}{Body Text}
+%%
 \newcommand{\slideDouble}[3][]{ 
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/type/.get=\myType}%
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
-    \pgfkeys{/templateParams/banner/.get=\myBanner}%
-    \IfStrEq{\myType}{diagram}
-        { \def\localH{c} \def\localV{c} \def\localT{right} \def\localP{page} }
-        { \def\localH{l} \def\localV{t} \def\localT{left} \def\localP{box} }
+    \resetSlideParams
+    \pgfkeys{/slideParams/.cd, #1}
+    \pgfkeys{/slideParams/distribution/.get=\myDistribution}%
+    \pgfkeys{/slideParams/title/.get=\myTitle}%
+    \pgfkeys{/slideParams/type/1/.get=\myTypeOne}%
+    \pgfkeys{/slideParams/type/2/.get=\myTypeTwo}%
+    \pgfkeys{/slideParams/font/.get=\myFont}%
+    \pgfkeys{/slideParams/font/1/.get=\myFontOne}%
+    \pgfkeys{/slideParams/font/2/.get=\myFontTwo}%
 
-    \begin{frame}[plain]
-    \IfStrEq{\myBanner}{true}{\elementBanner}{}
-    \elementTitle[type=\localT, title=\myTitle]
-    \layoutText[target=\localP, slicesH=2, targetH=1, halign=\localH, valign=\localV]{#2}
-    \layoutText[target=body, slicesH=2, targetH=2, halign=l, valign=t]{#3}
-    \end{frame}
-}
+    \edef\myTarget{body}
+    \edef\myHAlign{l}
+    \edef\myVAlign{t}
 
-%% @template TextImage (Title + Text + Image)
-%% Combine a title with text on the left and an image on the right
-%% Example:
-%%      \slideTextImage[title=Title]{Image}{Text}
-%% params:  templateParams(type=text | diagram, title)[1], image[2], text[3]
-\newcommand{\slideTextImage}[3][]{
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/type/.get=\myType}%
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
-    \pgfkeys{/templateParams/banner/.get=\myBanner}%
-    \pgfkeys{/templateParams/valign/.get=\myVAlign}%
-    \IfStrEq{\myType}{diagram}
-        { \def\localH{c} \def\localV{c}}
-        { \def\localH{l} \def\localV{t} }
+    \edef\mySlicesH{2} 
+    \edef\myMergeHOne{1} 
+    \edef\myTargetHTwo{2} 
+    \edef\myMergeHTwo{1}
+    \edef\myPadROne{0.0cm}
 
-    \begin{frame}[plain]
-    \IfStrEq{\myBanner}{true}{\elementBanner}{}
-    \elementTitle[type=left, title=\myTitle]
-    \layoutImage[target=page, slicesH=2, targetH=2, halign=r, valign=\myVAlign, padL=0.3cm]{#2}
-    \layoutText[target=body, slicesH=2, targetH=1, halign=\localH, valign=\localV]{#3}
-    \end{frame}
-}
+    \IfStrEq{\myTypeOne\myTypeTwo}{texttext}{}
+        {\edef\myFontOne{\myFont} \edef\myFontTwo{\myFont} }
 
-%% @template ImageText (Title + Image + Text)
-%% Pair a title with an image on the left and text on the right
-%% Example:
-%%      \slideImageText[title=Title]{Image}{Text}
-%% params:  templateParams(type=text | diagram, valign, title)[1], image[2], text[3]
-\newcommand{\slideImageText}[3][]{
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/type/.get=\myType}%
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
-    \pgfkeys{/templateParams/banner/.get=\myBanner}%
-    \pgfkeys{/templateParams/valign/.get=\myVAlign}%
-    \IfStrEq{\myType}{diagram}
-        { \def\localH{c} \def\localV{c}}
-        { \def\localH{l} \def\localV{t} }
-    
-    \begin{frame}[plain]
-    \IfStrEq{\myBanner}{true}{\elementBanner}{}
-    \elementTitle[type=right, title=\myTitle]
-    \layoutImage[target=page, slicesH=2, targetH=1, halign=l, valign=\myVAlign, padR=0.3cm]{#2}
-    \layoutText[target=body, slicesH=2, targetH=2, halign=\localH, valign=\localV]{#3}
-    \end{frame}
-}
+    \IfStrEq{\myFontOne}{body}
+        { \edef\myVAlignOne{t} \edef\myHAlignOne{l} }
+        { \edef\myVAlignOne{c} \edef\myHAlignOne{l} }
 
-%% @template Image (Title + Image)
-%% Show a title and a full-box image
-%% Example:
-%%      \slideImage[title=Title]{Image}
-%% params:  templateParams(title)[1], image[2]
-\newcommand{\slideImage}[2][]{ 
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
-    \pgfkeys{/templateParams/banner/.get=\myBanner}%
-    \pgfkeys{/templateParams/link/.get=\myLink}%
+    \IfStrEq{\myFontTwo}{body}
+        { \edef\myVAlignTwo{t} \edef\myHAlignTwo{l} }
+        { \edef\myVAlignTwo{c} \edef\myHAlignTwo{l} }
 
-    \begin{frame}[plain]
-    \elementTitle[title=\myTitle]
-    \IfStrEq{\myBanner}{true}{\elementBanner}{}
-    \ifthenelse{\equal{\myLink}{}}{}
-        {\layoutText[target=page, font=small, slicesV=9, targetV=8, valign=b, halign=c]{\myLink}}
-    \layoutImage[target=body]{#2}
-    \end{frame}
-}
-
-%% @template DobleImage (Title + Image + Image)
-%% Include a title with two side-by-side images, one on the left and one on the right
-%% Example:
-%%      \slideDoubleImage[title=Title]{Image1}{Image2}
-%% params:  templateParams(title)[1], image1[2], image2[3]
-\newcommand{\slideDoubleImage}[3][]{ 
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
-    \pgfkeys{/templateParams/banner/.get=\myBanner}%
-
-    \begin{frame}[plain]
-    \elementTitle[title=\myTitle] %% Title
-    \IfStrEq{\myBanner}{true}{\elementBanner}{}
-    \layoutImage[target=body, slicesH=2, targetH=1]{#2}  %% Image on the Left-box
-    \layoutImage[target=body, slicesH=2, targetH=2]{#3} %% Image on the Right-box
-    \end{frame}
-}
-
-
-%% @template BigImage (Full-Page Big Image)
-%% Display a full-page, single image on the whole page
-%% Example:
-%%      \slideBigImage{Image}
-%% params: image[1]
-\newcommand{\slideBigImage}[1]{ 
-    \resetTemplateParams
-    \begin{frame}[plain]
-    \layoutImage[target=page]{#1} %% Image on Full-page
-    \end{frame}
-}
-
-%% @template DiagramExplanation (Image | Diagram + Explanation)
-%% Template for image on 3/5 left and Text on 2/5 right.
-%% Example:
-%%      \slideImageExplanation[type=diagram, title=Title]{Image1}{Explanation}
-%% params:  templateParams(type=image | diagram, title)[1], image[2], text[3]
-\newcommand{\slideDiagramExplanation}[3][]{ 
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/type/.get=\myType}%
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
-    \pgfkeys{/templateParams/banner/.get=\myBanner}%
-
-    \begin{frame}[plain]
-
-
-    \ifthenelse{\equal{\myType}{diagram}}{
-        \ifthenelse{\equal{\myTitle}{}}{
-            \layoutText[target=page, slicesH=5, targetH=1, mergeH=3, padR=0.2cm]{#2}
-            \layoutText[target=page, slicesH=5, targetH=4, mergeH=2]{#3}
-        }{%
-            \elementTitle[title=\myTitle, type=left]
-            \layoutText[target=body, slicesH=5, targetH=1, mergeH=3,, padR=0.2cm]{#2}
-            \layoutText[target=body, slicesH=5, targetH=4, mergeH=2]{#3}
-            \IfStrEq{\myBanner}{true}{\elementBanner}{}
-        }
-    }{%
-        \ifthenelse{\equal{\myTitle}{}}{
-            \layoutImage[target=page, slicesH=5, targetH=1, mergeH=3, halign=l, padR=0.2cm]{#2}
-            \layoutText[target=page, slicesH=5, targetH=4, mergeH=2]{#3}
-        }{%
-            \elementTitle[title=\myTitle, type=left]
-            \layoutImage[target=page, slicesH=5, targetH=1, mergeH=3, halign=l, padR=0.2cm]{#2}
-            \layoutText[target=body, slicesH=5, targetH=4, mergeH=2]{#3}
-            \IfStrEq{\myBanner}{true}{\elementBanner}{}
-        }
+    \IfStrEq{\myDistribution}{3/5}{ 
+        \edef\mySlicesH{5} 
+        \edef\myMergeHOne{2} 
+        \edef\myTargetHTwo{3} 
+        \edef\myMergeHTwo{3}
+        \edef\myPadROne{0.2cm}
+    }{
+        \IfStrEq{\myDistribution}{5/3}{ 
+            \edef\mySlicesH{5} 
+            \edef\myMergeHOne{3}
+            \edef\myTargetHTwo{4} 
+            \edef\myMergeHTwo{2}
+            \edef\myPadROne{0.2cm}
+        }{}
     }
 
+    \begin{frame}[plain]
+        \IfSubStr{,texttext,textdiagram,diagramtext,}{\myTypeOne\myTypeTwo}{
+            \IfStrEq{\myTitle}{}{}
+            { \elementTitle[type=full]{\myTitle}
+              \elementBanner}
+
+            \layoutElement[type=\myTypeOne, target=body, slicesH=\mySlicesH, targetH=1, mergeH=\myMergeHOne, valign=\myVAlignOne, halign=\myHAlignOne, font=\myFontOne, padR=\myPadROne]{#2}
+            \layoutElement[type=\myTypeTwo, target=body, slicesH=\mySlicesH, targetH=\myTargetHTwo, mergeH=\myMergeHTwo, halign=l, valign=\myVAlignTwo, font=\myFontTwo]{#3}
+        }{}
+        \IfSubStr{,imagetext, imagediagram, imageimport,}{\myTypeOne\myTypeTwo}{
+            \IfStrEq{\myTitle}{}
+                { \edef\myTargetText{page} \edef\myVAlignTwo{c}}
+                { \edef\myTargetText{body}  \elementTitle{\myTitle}}
+            \layoutElement[type=image, target=body, slicesH=\mySlicesH, targetH=1, mergeH=\myMergeHOne, valign=c, halign=c, padR=0.3cm]{#2}
+            \layoutElement[type=\myTypeTwo, target=\myTargetText, slicesH=\mySlicesH, targetH=\myTargetHTwo, mergeH=\myMergeHTwo, halign=l, valign=\myVAlignTwo,  font=\myFontTwo]{#3}
+        }{}
+        \IfSubStr{,textimage, diagramimage, importimage,}{\myTypeOne\myTypeTwo}{
+            \IfStrEq{\myTitle}{}
+                { \edef\myTargetText{page} \edef\myVAlignTwo{c} }
+                { \edef\myTargetText{body}  \elementTitle{\myTitle} \elementBanner}
+            \layoutElement[type=\myTypeOne, target=\myTargetText, slicesH=\mySlicesH, targetH=1, mergeH=\myMergeHOne, halign=\myHAlignTwo, valign=\myVAlignTwo, font=\myFontOne, padR=0.1cm]{#2}
+            \layoutElement[type=image, target=body, slicesH=\mySlicesH, targetH=\myTargetHTwo, mergeH=\myMergeHTwo, valign=c, halign=c]{#3}
+        }{}
+        \IfStrEq{\myTypeOne\myTypeTwo}{imageimage}{
+            \IfStrEq{\myTitle}{}{}
+            { \elementTitle[type=full]{\myTitle}
+              \elementBanner}
+            \layoutElement[type=image, target=body, slicesH=2, targetH=1, halign=l, valign=c, padR=0.2cm]{#2}
+            \layoutElement[type=image, target=body, slicesH=2, targetH=2, halign=l, valign=c, padL=0.2cm]{#3}
+        }{}
     \end{frame}
 }
-
 
 %% @template Divider
 %% Template for Section Dividers
@@ -868,77 +734,10 @@
 %%      \slideDivider{Title}
 %% params:  title[1]
 \newcommand{\slideDivider}[1]{ 
-    \resetTemplateParams
-
+    \resetSlideParams
+    
     \begin{frame}[plain]
-    \layoutText[target=page, slicesV=3, targetV=2, font=large, padL=0.4cm, halign=l]{#1} 
-    \end{frame}
-}
-
-
-%% @template Quote (Full-Page Big Text)
-%% Highlight a full-page, prominent quote
-%% Example:
-%%      \slideQuote{Quote}
-%% params:  quote[1]
-\newcommand{\slideQuote}[1]{ 
-    \resetTemplateParams
-
-    \begin{frame}[plain]
-    \layoutText[target=page, padL=0.4cm, padR=0.2cm, font=big]{#1} 
-    \end{frame}
-}
-
-%% @template QuoteText (Quote (left) + Text)
-%% Pair a larger quote on the left with accompanying text on the right
-%% Type=diagram will force centering the diagram in the Text box.
-%% Example:
-%%      \slideQuoteText[type=diagram]{Quote}{Text}
-%% params:  templateParams(type=diagram | text)[1], quote[2], text[3]
-\newcommand{\slideQuoteText}[3][]{ 
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/type/.get=\myType}%
-    \IfStrEq{\myType}{diagram}{ \def\localH{c}}{ \def\localH{l}}
-
-    \begin{frame}[plain]
-    \layoutText[target=page, slicesH=2, targetH=1, halign=r, valign=c, padL=0.2cm, padR=0.2cm, font=larger]{#2} 
-    \layoutText[target=page, slicesH=2, targetH=2, halign=\localH, font=body]{#3} %% Text on the Right-box
-    \elementBanner
-    \end{frame}
-}
-
-%% @template TextQuote (Text + Quote (right))
-%% Pair a a text on the left with a larger quote on the right.
-%% Type=diagram will force centering the diagram in the Text box.
-%% Example:
-%%      \slideTextQuote[type=diagram]{Quote}{Text}
-%% params:  templateParams(type=text | diagram)[1], quote[2], text[3]
-\newcommand{\slideTextQuote}[3][]{
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/type/.get=\myType}%
-    \IfStrEq{\myType}{diagram}{ \def\localH{c}}{ \def\localH{l}}
-
-    \begin{frame}[plain]
-    \layoutText[target=page, slicesH=2, targetH=2, halign=l, padL=0.2cm, font=larger]{#2}
-    \layoutText[target=page, slicesH=2, targetH=1, halign=\localH, padR=0.2cm, font=body]{#3}
-    \end{frame}
-    }
-
-%% @template QuoteImage (Quote (left) + Image)
-%% Pair a larger quote on the left with accompanying Image on the right
-%% Example:
-%%      \slideQuoteImage[image=Image]{Quote}
-%% params:  templateParams(type=diagram | text)[1], image[2], quote[3]
-\newcommand{\slideQuoteImage}[3][]{ 
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/type/.get=\myType}%
-
-    \begin{frame}[plain]
-    \layoutText[target=page, slicesH=2, targetH=1, halign=l, valign=c, padL=0.2cm, padR=0.2cm, font=larger]{#3} 
-    \layoutImage[target=page, slicesH=2, targetH=2]{#2} %% Image on the Right-box
+    \layoutElement[type=text, target=page, slicesV=3, targetV=2, font=large, padL=0.4cm, halign=l]{#1} 
     \end{frame}
 }
 
@@ -948,117 +747,88 @@
 %%      \slideQA[question=Could this really work?, answer=A: It all depends}
 %% params: question[1], answer[2]
 \newcommand{\slideQA}[2]{ 
-    \resetTemplateParams
+    \resetSlideParams
 
     \begin{frame}[plain]
-    \layoutText[target=page, slicesV=2, targetV=1, font=larger]{#1}
-    \layoutText[target=page, slicesV=2, targetV=2, font=title]{#2}
+    \layoutElement[type=text, target=page, slicesV=3, targetV=1, mergeV=2, font=larger, valign=c]{#1}
+    \layoutElement[type=text, target=page, slicesV=3, targetV=3, font=title]{#2}
     \elementBanner
     \end{frame}
 }
+
+%% @template Double Column Forcing 3/5 or 5/3 explation
+%% Example:
+%%      \slideExplanation[type=reversed, title=Title, type/1=image]{img-1}{Body Text}
+%%
+\newcommand{\slideExplanation}[3][]{
+    \resetSlideParams
+    \pgfkeys{/slideParams/.cd, #1}
+    \pgfkeys{/slideParams/type/.get=\expDistribution}%
+
+    \IfStrEq{\expDistribution}{reversed}{
+        \slideDouble[#1, distribution=3/5]{#2}{#3}
+    }{
+        \slideDouble[#1, distribution=5/3]{#2}{#3}
+    }
+}
+
 
 %% @template Literature (Big Image (left) + Text + Link)
 %% Showcase a larger image on the left, text on the top-right, and a link in the bottom-right
 %% Example:
 %%      \slideLiterature[title=Title, image=book-cover, link=http://somewhere.com/book]{book-chapters}
-%% params: [templateParams(image, link, title}[1], text{2}
+%% params: [slideParams(image, link, title}[1], text{2}
 \newcommand{\slideLiterature}[2][]{ 
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/image/.get=\myImage}%
-    \pgfkeys{/templateParams/link/.get=\myLink}%
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \resetSlideParams
+    \pgfkeys{/slideParams/.cd, #1}
+    \pgfkeys{/slideParams/image/.get=\myImage}%
+    \pgfkeys{/slideParams/link/.get=\myLink}%
+    \pgfkeys{/slideParams/title/.get=\myTitle}%
 
     \begin{frame}[plain]
-    \layoutImage[target=page, slicesH=2, targetH=1, halign=l]{\myImage} 
-    \layoutText[target=footer, slicesH=2, targetH=2, font=small]{\myLink} 
-    \layoutText[target=header, slicesH=2, targetH=2, halign=l, font=h2]{\myTitle} 
-    \layoutText[target=body, slicesH=2, targetH=2, valign=t, padT=0.4cm, valign=t, font=body]{#2} 
+    \layoutElement[type=image, target=page, slicesH=2, targetH=1, halign=l]{\myImage} 
+    \layoutElement[type=text, target=footer, slicesH=2, targetH=2, font=small]{\myLink} 
+    \layoutElement[type=text, target=header, slicesH=2, targetH=2, halign=l, font=h2]{\myTitle} 
+    \layoutElement[type=text, target=body, slicesH=2, targetH=2, valign=t, padT=0.4cm, valign=t, font=body]{#2} 
     \end{frame}
 }
-
-
-
-%% @template Template for Definitions (dimensions 2 to 8)
-%% Example:
-%%      \slideDefinitions[type=text, title=Title, title/1=Title1, ..., title/N=TitleN, text/1=!text-1, ..., text/n=!text-n]
-%% params: templateParams{1}
-\newcommand{\slideDefinitions}[1][]{ 
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
-    \pgfkeys{/templateParams/type/.get=\myType}%
-    \pgfkeys{/templateParams/color/.get=\myColor}%
-    \pgfkeys{/templateParams/font/.get=\myFont}%
-    \global\let\partCount\empty
-
-    \foreach \x in {1,2,3,4,5,6,7,8}{%
-        \pgfkeys{/templateParams/title/\x/.get=\thisTitle}
-        \ifx\thisTitle\empty{\breakforeach}\else{\xdef\partCount{\x}}\fi
-    }
-
-    \begin{frame}[plain]
-        \elementTitle[title=\myTitle]
-
-        \foreach \i in {1,...,\partCount}{
-            \pgfkeys{/templateParams/title/\i/.get=\localTitle}%
-            \pgfkeys{/templateParams/text/\i/.get=\localText}%
-            \IfStrEq{\myType}{text}{%
-                \ifthenelse{\boolean{\myColor}{}}{
-                    \ifodd\i
-                        \layoutColor[target=body, slicesV=\partCount, targetV=\i, slicesH=3, targetH=1]{fau-shade}
-                        \layoutColor[target=body, slicesV=\partCount, targetV=\i, slicesH=3, targetH=2, mergeH=2]{fau-shade}
-                    \fi
-                }{}
-                \layoutText[target=body, slicesV=\partCount, targetV=\i, slicesH=3, targetH=1, font=\myFont]{\localTitle}
-            }{
-                \layoutImage[target=body, slicesV=\partCount, targetV=\i, slicesH=3, targetH=1, padL=0.2cm, padR=0.3cm]{\localTitle}
-            }
-            \layoutText[target=body, slicesV=\partCount, targetV=\i, slicesH=3, targetH=2, mergeH=2, halign=l]{\localText} 
-        }    
-        
-        \ifnum\partCount<5 \elementBanner \fi
-        \end{frame}
-}
-
 
 %% @template Template for Progress (dimensions 2 to 8)
 %% Example:
 %%      \slideProgress[type=text, title=Title, title/1=Title1, ..., title/N=TitleN, text/1=!text-1, ..., text/n=!text-n]
-%% params: templateParams{1}
+%% params: slideParams{1}
 \newcommand{\slideProgress}[1][]{ 
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
-    \pgfkeys{/templateParams/type/.get=\myType}%
-    \pgfkeys{/templateParams/color/.get=\myColor}%
-    \pgfkeys{/templateParams/font/.get=\myFont}%
+    \resetSlideParams
+    \pgfkeys{/slideParams/.cd, #1}
+    \pgfkeys{/slideParams/title/.get=\myTitle}%
+    \pgfkeys{/slideParams/type/.get=\myType}%
+    \pgfkeys{/slideParams/color/.get=\myColor}%
+    \pgfkeys{/slideParams/font/.get=\myFont}%
     \global\let\partCount\empty
 
     \foreach \x in {1,2,3,4,5,6,7,8}{%
-        \pgfkeys{/templateParams/title/\x/.get=\thisTitle}
+        \pgfkeys{/slideParams/title/\x/.get=\thisTitle}
         \ifx\thisTitle\empty{\breakforeach}\else{\xdef\partCount{\x}}\fi
     }
 
     \begin{frame}[plain]
-        \elementTitle[title=\myTitle]
+        \elementTitle{\myTitle}
 
         \foreach \i in {1,...,\partCount}{
-            \pgfkeys{/templateParams/title/\i/.get=\localTitle}%
-            \pgfkeys{/templateParams/text/\i/.get=\localText}%
+            \pgfkeys{/slideParams/title/\i/.get=\localTitle}%
+            \pgfkeys{/slideParams/text/\i/.get=\localText}%
 
             \IfStrEq{\myType}{text}{%
-                \layoutText[target=body, slicesV=5, targetV=2, slicesH=\partCount, targetH=\i, font=\myFont]{\localTitle, padL=0.1cm, padR=0.05cm}
+                \layoutElement[type=text, target=body, slicesV=5, targetV=2, slicesH=\partCount, targetH=\i, font=\myFont]{\localTitle, padL=0.1cm, padR=0.05cm}
             }{
-                \layoutImage[target=body, slicesV=5, targetV=1, mergeV=2, slicesH=\partCount, targetH=\i, valign=t, padB=0.1cm, padL=0.1cm, padR=0.05cm]{\localTitle}
+                \layoutElement[type=image, target=body, slicesV=5, targetV=1, mergeV=2, slicesH=\partCount, targetH=\i, valign=t, padB=0.1cm, padL=0.1cm, padR=0.05cm]{\localTitle}
             }
-            \layoutText[target=body, slicesV=5, targetV=3, mergeV=3, slicesH=\partCount, targetH=\i, valign=t, padL=0.1cm, padR=0.05cm]{\pgfkeys{/templateParams/text/\i}}
+            \layoutElement[type=text, target=body, slicesV=5, targetV=3, mergeV=3, slicesH=\partCount, targetH=\i, valign=t, padL=0.1cm, padR=0.05cm]{\pgfkeys{/slideParams/text/\i}}
         }    
    
         \elementBanner
         \end{frame}
 }
-
 
 
 %%%
@@ -1073,16 +843,17 @@
     \end{tikzpicture}
 }
 
+
 \newcommand{\MAPPING}[1][]{
-    \resetTemplateParams
-    \pgfkeys{/templateParams/.cd, #1}
-    \pgfkeys{/templateParams/type/.get=\myType}%
-    \pgfkeys{/templateParams/title/.get=\myTitle}%
+    \resetSlideParams
+    \pgfkeys{/slideParams/.cd, #1}
+    \pgfkeys{/slideParams/type/.get=\myType}%
+    \pgfkeys{/slideParams/title/.get=\myTitle}%
 
     \global\let\partCount\empty
 
     \foreach \x in {1,2,3,4,5,6,7,8}{%
-        \pgfkeys{/templateParams/title/\x/.get=\thisTitle}
+        \pgfkeys{/slideParams/title/\x/.get=\thisTitle}
         \ifx\thisTitle\empty{\breakforeach}\else{\xdef\partCount{\x}}\fi
     }
     
@@ -1090,32 +861,31 @@
         rectangle split, rectangle split parts=\partCount, draw, anchor=center},
         myarrow/.style={single arrow, draw=none}]
 
-        \ifthenelse{\equal{\myType}{text}}{
+        \IfStrEq{\myType}{text}{
             \node [rectangle,align=center,fill=fau-blue!30, minimum width=3cm, minimum height=3cm] (desc){\myTitle};
             
             \node [stack,nodes=6,right=of desc] (items) {
-                \pgfkeys{/templateParams/title/1}
-                \nodepart{two}\pgfkeys{/templateParams/title/2}
-                \nodepart{three}\pgfkeys{/templateParams/title/3}
-                \nodepart{four}\pgfkeys{/templateParams/title/4}
-                \nodepart{five}\pgfkeys{/templateParams/title/5}
-                \nodepart{six}\pgfkeys{/templateParams/title/6}
-                \nodepart{seven}\pgfkeys{/templateParams/title/7}
-                \nodepart{eight}\pgfkeys{/templateParams/title/8}
+                \pgfkeys{/slideParams/title/1}
+                \nodepart{two}\pgfkeys{/slideParams/title/2}
+                \nodepart{three}\pgfkeys{/slideParams/title/3}
+                \nodepart{four}\pgfkeys{/slideParams/title/4}
+                \nodepart{five}\pgfkeys{/slideParams/title/5}
+                \nodepart{six}\pgfkeys{/slideParams/title/6}
+                \nodepart{seven}\pgfkeys{/slideParams/title/7}
+                \nodepart{eight}\pgfkeys{/slideParams/title/8}
             };
 
             \node [myarrow,draw,anchor=west] at ($(desc.east)+(2.5pt,0)$) {\phantom{te}} ;
-        }{
-
+         }{
             \node [stack,nodes=6] (items) {
-                \pgfkeys{/templateParams/title/1}
-                \nodepart{two}\pgfkeys{/templateParams/title/2}
-                \nodepart{three}\pgfkeys{/templateParams/title/3}
-                \nodepart{four}\pgfkeys{/templateParams/title/4}
-                \nodepart{five}\pgfkeys{/templateParams/title/5}
-                \nodepart{six}\pgfkeys{/templateParams/title/6}
-                \nodepart{seven}\pgfkeys{/templateParams/title/7}
-                \nodepart{eight}\pgfkeys{/templateParams/title/8}
+                \pgfkeys{/slideParams/title/1}
+                \nodepart{two}\pgfkeys{/slideParams/title/2}
+                \nodepart{three}\pgfkeys{/slideParams/title/3}
+                \nodepart{four}\pgfkeys{/slideParams/title/4}
+                \nodepart{five}\pgfkeys{/slideParams/title/5}
+                \nodepart{six}\pgfkeys{/slideParams/title/6}
+                \nodepart{seven}\pgfkeys{/slideParams/title/7}
+                \nodepart{eight}\pgfkeys{/slideParams/title/8}
             };
 
             \node [right=of items, rectangle,align=center,fill=fau-blue!30, minimum width=3cm, minimum height=3cm] (desc){\myTitle};
