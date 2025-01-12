@@ -2,6 +2,7 @@
 %% Copyright 2024 Fernando Koch
 %% edu-style.sty, Latex style for Simple Education Slides.
 %%
+%% v0.5.2 bug fixes
 %% v0.5 Complete re-work of slide templates and composition logic
 %% v0.4 Fixes and small improvements
 %% v0.3 Add support to 'diagram', improved parameter passing, added new templates (slideDefinitions, slideProgress, slideEvolution)
@@ -841,7 +842,7 @@
             \pgfkeys{/slideParams/title/\i/.get=\localTitle}%
 
             \IfStrEq{\myType}{text}{%
-                \layoutElement[type=text, target=body, slicesV=5, targetV=2, slicesH=\partCount, targetH=\i, font=\myFont]{\localTitle, padL=0.1cm, padR=0.05cm}
+                \layoutElement[type=text, target=body, slicesV=5, targetV=2, slicesH=\partCount, targetH=\i, font=\myFont, padL=0.1cm, padR=0.05cm]{\localTitle}
             }{
                 \layoutElement[type=image, target=body, slicesV=5, targetV=1, mergeV=2, slicesH=\partCount, targetH=\i, valign=t, padB=0.1cm, padL=0.1cm, padR=0.05cm]{\localTitle}
             }
