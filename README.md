@@ -9,10 +9,7 @@ professional appearance with minimal effort.
 
 ## Templates
 
-The soruce code documentation describe the templates as 'rules' that can be used for Generative AI (check for comments tagged with @template)
-
-The templates are structured in two groups.
-
+The source code documentation describe the templates as 'rules' that can be used for Generative AI (check for comments tagged with @template). The templates are structured in two groups: (Group 1) Structured Templates, for composed slides to simplify the work, and; (Group 2) Working Templates, for configuration slides with multiple parameters and variations.
 
 ### (Group 1) Structured Templates
 
