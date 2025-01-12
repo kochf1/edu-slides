@@ -68,12 +68,12 @@ The source code documentation describe the templates as 'rules' that can be used
 ```
 
 ```
-%% \slideMultiple[type=TYPE, title=TITLE, title/1=Title1, ..., title/N=TitleN, content/1=!text-1]
+%% \slideMultiple[type=TYPE, title=TITLE, title/1=Title1, ..., title/N=TitleN, text/1=TextN]
 %% Generates a slide with multiple columns.
 %% TYPE (text(default), image, diagram) defines the type of each column's title
 %% TITLE (optional) defines the slide TITLE
 %% title/n defines the TITLE_n for column N
-%% text/n defines the text for column N
+%% text/n defines the TEXT_n for column N
 ```
 
 ## Getting Started
