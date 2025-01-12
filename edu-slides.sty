@@ -532,12 +532,16 @@
 %%%  SLIDE TEMPLATES
 %%%
 
+%%%
+%%% (GROUP 1) STRUCTURED SLIDES
+%%%
 
-%% @template Cover
-%% Open the presentation with a title.
-%% Example:
-%%      \slideCover{Lesson 1 \\ Introductions}
-%% params:  [slideParams(title)][1]
+
+%%
+%% @template 
+%% \slideCover{TITLE}
+%% Generates the opening slide for the deck with TITLE
+%%
 \newcommand{\slideCover}[1]{ 
     \resetSlideParams
     \pgfkeys{/params/course/.get=\course}%
@@ -571,11 +575,11 @@
     \end{frame}
 }
 
-%% @template Agenda
-%% Present the Agenda
-%% Example:
-%%     \slideAgenda{1. Introduction \\ 2. Main Topics \\ 3. Conclusion} 
-%% params: agenda[1]
+%% 
+%% @template
+%% slideAgenda{TOPICS}
+%% Generates an Agenda with TOPICS
+%%
 \newcommand{\slideAgenda}[1]{ 
     \resetSlideParams
     \begin{frame}[plain]
@@ -586,11 +590,11 @@
     \end{frame}
 }
 
-%% @template Back Cover
-%% Closing slides at the end of the presentation
-%% Example:
-%%      \slideBackCover
-%% params: none
+%% 
+%% @template 
+%% \slideBackCover
+%% Generates the closing slide for the deck
+%%
 \newcommand{\slideBackCover}{ 
     \pgfkeys{/params/logo/.get=\logo}
     \pgfkeys{/params/course/.get=\course}
@@ -611,9 +615,65 @@
     \end{frame}
 }
 
-%% @template Simple Column
-%% Example:
-%%      \slideSimple[title=Title]{Body Text}
+%%
+%% @template Divider
+%% \slideDivider{TITLE}
+%% Generates a DIVIDER with a SECTION_TITLE to separate sections
+%% 
+\newcommand{\slideDivider}[1]{ 
+    \resetSlideParams
+    
+    \begin{frame}[plain]
+    \layoutElement[type=text, target=page, slicesV=3, targetV=2, font=large, padL=0.4cm, halign=l]{#1} 
+    \end{frame}
+}
+
+%%
+%% @template
+%% \slideQA{QUESTION}{ANSWER}
+%% Generates a sldie structured for Question and Answer
+%% 
+\newcommand{\slideQA}[2]{ 
+    \resetSlideParams
+
+    \begin{frame}[plain]
+    \layoutElement[type=text, target=page, slicesV=3, targetV=1, mergeV=2, font=larger, valign=c]{#1}
+    \layoutElement[type=text, target=page, slicesV=3, targetV=3, font=title]{#2}
+    \elementBanner
+    \end{frame}
+}
+
+%% @template 
+%% \slideLiterature[title=TITLE, image=COVER, link=LINK]{CONTENT}
+%% Generates a slide to present a book with TITLE, COVER, and CONTENT.
+%% Optionally provide LINK to book content.
+%%
+\newcommand{\slideLiterature}[2][]{ 
+    \resetSlideParams
+    \pgfkeys{/slideParams/.cd, #1}
+    \pgfkeys{/slideParams/image/.get=\myImage}%
+    \pgfkeys{/slideParams/link/.get=\myLink}%
+    \pgfkeys{/slideParams/title/.get=\myTitle}%
+
+    \begin{frame}[plain]
+    \layoutElement[type=image, target=page, slicesH=2, targetH=1, halign=l]{\myImage} 
+    \layoutElement[type=text, target=footer, slicesH=2, targetH=2, font=small]{\myLink} 
+    \layoutElement[type=text, target=header, slicesH=2, targetH=2, halign=l, font=h2]{\myTitle} 
+    \layoutElement[type=text, target=body, slicesH=2, targetH=2, valign=t, padT=0.4cm, valign=t, font=body]{#2} 
+    \end{frame}
+}
+
+
+%%%
+%%% (GROUP 2) WORKING SLIDES
+%%%
+
+%% 
+%% @template 
+%% \slideSimple[type=TYPE, title=TITLE, font=FONT]{CONTENT}
+%% Generates a slide with one column of given content TYPE (text(default), image, diagram, import).
+%% Apply optional TITLE.
+%% Apply provided CONTENT; if type=text, apply FONT (small, body, title, big) for text content.
 %%
 \newcommand{\slideSimple}[2][]{ 
     \resetSlideParams
@@ -643,9 +703,12 @@
 }
 
 
-%% @template Double Column
-%% Example:
-%%      \slideDouble[title=Title, type/1=image]{img-1}{Body Text}
+%% 
+%% @template 
+%% \slideDouble[type/1=TYPE, type/2=TYPE, font/1=FONT, font/2=font, title=TITLE]{CONTENT_LEFT}{CONTENT_RIGHT}
+%% Generates a slide with two columns.
+%% Each column defined with a given content TYPE (text(default), image, diagram, import), and FONT (small, body, large, big)
+%% Add optional TITLE.
 %%
 \newcommand{\slideDouble}[3][]{ 
     \resetSlideParams
@@ -728,37 +791,12 @@
     \end{frame}
 }
 
-%% @template Divider
-%% Template for Section Dividers
-%% Example:
-%%      \slideDivider{Title}
-%% params:  title[1]
-\newcommand{\slideDivider}[1]{ 
-    \resetSlideParams
-    
-    \begin{frame}[plain]
-    \layoutElement[type=text, target=page, slicesV=3, targetV=2, font=large, padL=0.4cm, halign=l]{#1} 
-    \end{frame}
-}
-
-%% @template QA (Quote (Top) + Text)
-%% Present a larger quote on top with supporting text at the bottom
-%% Example:
-%%      \slideQA[question=Could this really work?, answer=A: It all depends}
-%% params: question[1], answer[2]
-\newcommand{\slideQA}[2]{ 
-    \resetSlideParams
-
-    \begin{frame}[plain]
-    \layoutElement[type=text, target=page, slicesV=3, targetV=1, mergeV=2, font=larger, valign=c]{#1}
-    \layoutElement[type=text, target=page, slicesV=3, targetV=3, font=title]{#2}
-    \elementBanner
-    \end{frame}
-}
-
-%% @template Double Column Forcing 3/5 or 5/3 explation
-%% Example:
-%%      \slideExplanation[type=reversed, title=Title, type/1=image]{img-1}{Body Text}
+%%
+%% @template 
+%% \slideExplanation[type=ORDER, type/1=TYPE, type/2=TYPE, font/1=FONT, font/2=font, title=TITLE]{CONTENT_LEFT}{CONTENT_RIGHT}
+%% Specalization of \slideDouble with columns distributed as 2/5 and 3/5 of the slide space.
+%% type=reversed applies 3/5 and 2/5 column distribution.
+%% Other parameters like \slideDouble
 %%
 \newcommand{\slideExplanation}[3][]{
     \resetSlideParams
@@ -773,31 +811,16 @@
 }
 
 
-%% @template Literature (Big Image (left) + Text + Link)
-%% Showcase a larger image on the left, text on the top-right, and a link in the bottom-right
-%% Example:
-%%      \slideLiterature[title=Title, image=book-cover, link=http://somewhere.com/book]{book-chapters}
-%% params: [slideParams(image, link, title}[1], text{2}
-\newcommand{\slideLiterature}[2][]{ 
-    \resetSlideParams
-    \pgfkeys{/slideParams/.cd, #1}
-    \pgfkeys{/slideParams/image/.get=\myImage}%
-    \pgfkeys{/slideParams/link/.get=\myLink}%
-    \pgfkeys{/slideParams/title/.get=\myTitle}%
 
-    \begin{frame}[plain]
-    \layoutElement[type=image, target=page, slicesH=2, targetH=1, halign=l]{\myImage} 
-    \layoutElement[type=text, target=footer, slicesH=2, targetH=2, font=small]{\myLink} 
-    \layoutElement[type=text, target=header, slicesH=2, targetH=2, halign=l, font=h2]{\myTitle} 
-    \layoutElement[type=text, target=body, slicesH=2, targetH=2, valign=t, padT=0.4cm, valign=t, font=body]{#2} 
-    \end{frame}
-}
-
-%% @template Template for Progress (dimensions 2 to 8)
-%% Example:
-%%      \slideProgress[type=text, title=Title, title/1=Title1, ..., title/N=TitleN, text/1=!text-1, ..., text/n=!text-n]
-%% params: slideParams{1}
-\newcommand{\slideProgress}[1][]{ 
+%% @template
+%% \slideMultiple[type=TYPE, title=TITLE, title/1=Title1, ..., title/N=TitleN, content/1=text-1, ...]
+%% Generates a slide with multiple columns.
+%% TYPE (text(default), image, diagram) defines the type of each column's title
+%% TITLE (optional) defines the slide TITLE
+%% title/n defines the TITLE_n for column N
+%% text/n defines the text for column N
+%%
+\newcommand{\slideMultiple}[1][]{ 
     \resetSlideParams
     \pgfkeys{/slideParams/.cd, #1}
     \pgfkeys{/slideParams/title/.get=\myTitle}%
@@ -816,14 +839,13 @@
 
         \foreach \i in {1,...,\partCount}{
             \pgfkeys{/slideParams/title/\i/.get=\localTitle}%
-            \pgfkeys{/slideParams/text/\i/.get=\localText}%
 
             \IfStrEq{\myType}{text}{%
                 \layoutElement[type=text, target=body, slicesV=5, targetV=2, slicesH=\partCount, targetH=\i, font=\myFont]{\localTitle, padL=0.1cm, padR=0.05cm}
             }{
                 \layoutElement[type=image, target=body, slicesV=5, targetV=1, mergeV=2, slicesH=\partCount, targetH=\i, valign=t, padB=0.1cm, padL=0.1cm, padR=0.05cm]{\localTitle}
             }
-            \layoutElement[type=text, target=body, slicesV=5, targetV=3, mergeV=3, slicesH=\partCount, targetH=\i, valign=t, padL=0.1cm, padR=0.05cm]{\pgfkeys{/slideParams/text/\i}}
+            \layoutElement[type=text, target=body, slicesV=5, targetV=3, mergeV=3, slicesH=\partCount, targetH=\i, valign=t, padL=0.1cm, padR=0.05cm]{\pgfkeys{/slideParams/content/\i}}
         }    
    
         \elementBanner
